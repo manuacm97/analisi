@@ -1,5 +1,5 @@
-let giocataManuale = ""; // Variabile globale per la giocata scelta
-let datiAttuali = null; // Variabile per tenere i dati attuali prima del salvataggio
+let giocataManuale = "";
+let datiAttuali = null;
 
 function cercaTransfermarkt() {
     const nomeSquadraA = document.getElementById('nomeSquadraA').value;
@@ -13,7 +13,6 @@ function calcolaRisultati() {
     const nomeSquadraA = document.getElementById('nomeSquadraA').value;
     const nomeSquadraB = document.getElementById('nomeSquadraB').value;
 
-    // Aggiorna i titoli
     document.getElementById('titoloSquadraA').textContent = `${nomeSquadraA} (Casa)`;
     document.getElementById('titoloSquadraB').textContent = `${nomeSquadraB} (Trasferta)`;
     document.getElementById('nomeRisultatiA').textContent = nomeSquadraA;
@@ -111,17 +110,15 @@ function calcolaRisultati() {
     let punteggioTotaleB = (punteggioGeneraleB * 0.7) + (punteggioCasaB * 0.3);
     let punteggioCoppeB = punteggioTotaleB + coeffB;
 
-    // Salva temporaneamente i dati attuali (senza salvarli ancora in localStorage)
     datiAttuali = {
         nomeSquadraA, nomeSquadraB, golFattiA, golSubitiA, casaTrasfertaA,
         golFattiB, golSubitiB, casaTrasfertaB, posizioneA, totSquadreA,
         squalificheA, coeffA, posizioneB, totSquadreB, squalificheB, coeffB,
         timestamp: new Date().toLocaleString(),
-        risultato: "", // Campo per il risultato
-        esito: "" // Campo per l'esito (Vincente/Perdente)
+        risultato: "",
+        esito: ""
     };
 
-    // Funzione per colorare percentuali
     function coloraPercentuale(perc, elemento) {
         const r = Math.round(255 * (1 - perc / 100));
         const g = Math.round(255 * (perc / 100));
@@ -225,7 +222,6 @@ function calcolaRisultati() {
     coloraPercentuale(totaliTot.filter(t => t >= 2 && t <= 4).length / 12 * 100, document.getElementById('mg24Tot'));
     coloraPercentuale(totaliTot.filter(t => t >= 3 && t <= 5).length / 12 * 100, document.getElementById('mg35Tot'));
 
-    // Salva i dati temporaneamente in localStorage per "Ricarica Ultimi Dati"
     localStorage.setItem('ultimiDati', JSON.stringify(datiAttuali));
 }
 
@@ -267,7 +263,7 @@ function ricaricaDati() {
     document.getElementsByName('squalificheB')[0].value = datiSalvati.squalificheB;
     document.getElementsByName('coeffB')[0].value = datiSalvati.coeffB;
 
-    giocataManuale = ""; // Reset giocata manuale
+    giocataManuale = "";
     datiAttuali = datiSalvati;
     calcolaRisultati();
 }
@@ -382,5 +378,50 @@ function aggiornaEsito(index, valore) {
     localStorage.setItem('partitePrecedenti', JSON.stringify(partitePrecedenti));
 }
 
-// Aggiorna la tabella all'avvio
-document.addEventListener('DOMContentLoaded', aggiornaTabellaPartite);
+// Esporta la lista delle partite salvate come file JSON
+function esportaPartite() {
+    const partitePrecedenti = JSON.parse(localStorage.getItem('partitePrecedenti')) || [];
+    if (partitePrecedenti.length === 0) {
+        alert("Nessuna partita da esportare!");
+        return;
+    }
+
+    const dataStr = JSON.stringify(partitePrecedenti, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "partite_salvate.json";
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+// Importa la lista delle partite salvate da un file JSON
+function importaPartite() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.onchange = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const importedData = JSON.parse(e.target.result);
+                localStorage.setItem('partitePrecedenti', JSON.stringify(importedData));
+                aggiornaTabellaPartite();
+                alert("Lista importata con successo!");
+            } catch (err) {
+                alert("Errore durante l'importazione: file non valido!");
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+// Inizializza la tabella delle partite salvate al caricamento della pagina
+document.addEventListener("DOMContentLoaded", () => {
+    aggiornaTabellaPartite();
+});

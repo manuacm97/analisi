@@ -1,20 +1,20 @@
 {
-    "name": "Analisi Scommesse",
-    "short_name": "Scommesse",
-    "start_url": "/",
-    "display": "standalone",
-    "background_color": "#f0f2f5",
-    "theme_color": "#2c6e49",
-    "icons": [
-      {
-        "src": "icon-192x192.png",
-        "sizes": "192x192",
-        "type": "image/png"
-      },
-      {
-        "src": "icon-512x512.png",
-        "sizes": "512x512",
-        "type": "image/png"
-      }
-    ]
-  }
+  "name": "Analisi Scommesse",
+  "short_name": "Scommesse",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1e1e1e",
+  "theme_color": "#f28c38",
+  "icons": [
+    {
+      "src": "icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

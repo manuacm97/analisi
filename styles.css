@@ -1,8 +1,8 @@
 body {
-    font-family: 'Work Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     background-color: #f0f2f5;
     margin: 0;
-    padding: 20px; /* Invariato per desktop */
+    padding: 20px;
     font-size: 14px;
 }
 
@@ -10,7 +10,7 @@ body {
     max-width: 1200px;
     margin: 0 auto;
     background: white;
-    padding: 30px; /* Invariato per desktop */
+    padding: 30px;
     border-radius: 15px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
@@ -18,19 +18,19 @@ body {
 h1 {
     text-align: center;
     color: #1a3c34;
-    font-size: 28px; /* Invariato per desktop */
+    font-size: 28px;
     margin-bottom: 30px;
 }
 
 h2 {
     color: #2c6e49;
-    font-size: 18px; /* Invariato per desktop */
+    font-size: 18px;
     margin-top: 0;
 }
 
 h3 {
     color: #2c6e49;
-    font-size: 16px; /* Invariato per desktop */
+    font-size: 16px;
     margin-top: 30px;
 }
 
@@ -50,7 +50,7 @@ h3 {
 .tabelle-affiancate {
     display: flex;
     gap: 20px;
-    justify-content: space-between; /* Invariato per desktop */
+    justify-content: space-between;
 }
 
 .squadra {
@@ -64,7 +64,7 @@ table {
 
 th, td {
     border: 1px solid #e0e0e0;
-    padding: 6px; /* Invariato per desktop */
+    padding: 6px;
     text-align: center;
 }
 
@@ -75,7 +75,7 @@ th {
 }
 
 select, input[type="text"] {
-    padding: 4px; /* Invariato per desktop */
+    padding: 4px;
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: 12px;
@@ -83,26 +83,15 @@ select, input[type="text"] {
 
 .esito {
     display: inline-block;
-    width: 25px; /* Invariato per desktop */
+    width: 25px;
     padding: 4px;
     border-radius: 3px;
     font-weight: bold;
 }
 
-.esito.vittoria {
-    background-color: #2ecc71;
-    color: white;
-}
-
-.esito.pareggio {
-    background-color: #95a5a6;
-    color: white;
-}
-
-.esito.sconfitta {
-    background-color: #e74c3c;
-    color: white;
-}
+.esito.vittoria { background-color: #2ecc71; color: white; }
+.esito.pareggio { background-color: #95a5a6; color: white; }
+.esito.sconfitta { background-color: #e74c3c; color: white; }
 
 .parametri {
     display: flex;
@@ -118,7 +107,7 @@ select, input[type="text"] {
 }
 
 input[type="number"] {
-    width: 50px; /* Invariato per desktop */
+    width: 50px;
     padding: 4px;
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -133,7 +122,7 @@ input[type="number"] {
 button {
     background-color: #2c6e49;
     color: white;
-    padding: 10px 20px; /* Invariato per desktop */
+    padding: 10px 20px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -155,7 +144,7 @@ button:hover {
 .tabelle-risultati {
     display: flex;
     gap: 20px;
-    justify-content: space-between; /* Invariato per desktop */
+    justify-content: space-between;
 }
 
 #risultatiSquadraA, #risultatiSquadraB, #percentualiEsiti, #tabellaPartiteSalvati {
@@ -182,9 +171,8 @@ button:hover {
     font-weight: bold;
 }
 
-/* Stile per i punteggi evidenziati */
 .punteggio {
-    font-size: 18px; /* Invariato per desktop */
+    font-size: 18px;
     font-weight: bold;
     color: #2c6e49;
     background-color: #e6f0ea;
@@ -192,106 +180,35 @@ button:hover {
     border-radius: 5px;
 }
 
-/* Media Queries per Mobile (sotto 768px) */
+/* Media Queries per Mobile */
 @media (max-width: 768px) {
-    body {
-        padding: 10px; /* Ridotto per mobile */
-    }
-
-    .container {
-        padding: 15px; /* Ridotto per mobile */
-    }
-
-    h1 {
-        font-size: 24px; /* Ridotto per mobile */
-    }
-
-    h2 {
-        font-size: 16px; /* Ridotto per mobile */
-    }
-
-    h3 {
-        font-size: 14px; /* Ridotto per mobile */
-    }
-
-    .nomi-squadre {
-        flex-direction: column; /* Impila verticalmente su mobile */
-        align-items: center;
-        gap: 10px;
-    }
-
-    .tabelle-affiancate {
-        flex-direction: column; /* Impila le tabelle su mobile */
-    }
-
-    .tabelle-risultati {
-        flex-direction: column; /* Impila i risultati su mobile */
-    }
-
-    table {
-        font-size: 12px; /* Ridotto per mobile */
-    }
-
-    th, td {
-        padding: 4px; /* Ridotto per mobile */
-    }
-
+    body { padding: 10px; }
+    .container { padding: 15px; }
+    h1 { font-size: 24px; }
+    h2 { font-size: 16px; }
+    h3 { font-size: 14px; }
+    .nomi-squadre { flex-direction: column; align-items: center; gap: 10px; }
+    .tabelle-affiancate { flex-direction: column; }
+    .tabelle-risultati { flex-direction: column; }
+    table { font-size: 12px; }
+    th, td { padding: 4px; }
     select, input[type="text"], input[type="number"] {
-        width: 100%; /* Occupa tutta la larghezza su mobile */
+        width: 100%;
         padding: 3px;
         font-size: 12px;
         box-sizing: border-box;
     }
-
-    .esito {
-        width: 20px; /* Ridotto per mobile */
-        padding: 2px;
-    }
-
-    .parametri {
-        flex-direction: column; /* Impila i parametri su mobile */
-        align-items: flex-start;
-    }
-
-    .buttons {
-        display: flex;
-        flex-direction: column; /* Impila i pulsanti su mobile */
-        gap: 10px;
-        align-items: center;
-    }
-
-    button {
-        padding: 8px 15px; /* Ridotto per mobile */
-        font-size: 12px;
-        margin: 0; /* Rimuove margini laterali su mobile */
-    }
-
-    .punteggio {
-        font-size: 16px; /* Ridotto per mobile */
-    }
-
-    #risultati, #partiteSalvati {
-        margin-top: 20px;
-        padding: 15px;
-    }
+    .esito { width: 20px; padding: 2px; }
+    .parametri { flex-direction: column; align-items: flex-start; }
+    .buttons { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+    button { padding: 8px 15px; font-size: 12px; margin: 0; }
+    .punteggio { font-size: 16px; }
+    #risultati, #partiteSalvati { margin-top: 20px; padding: 15px; }
 }
 
-/* Media Queries per schermi molto piccoli (sotto 480px, es. smartphone vecchi) */
 @media (max-width: 480px) {
-    table {
-        font-size: 10px; /* Ancora più piccolo per mobile */
-    }
-
-    th, td {
-        padding: 3px;
-    }
-
-    select, input[type="text"], input[type="number"] {
-        font-size: 10px;
-    }
-
-    button {
-        padding: 6px 12px;
-        font-size: 10px;
-    }
+    table { font-size: 10px; }
+    th, td { padding: 3px; }
+    select, input[type="text"], input[type="number"] { font-size: 10px; }
+    button { padding: 6px 12px; font-size: 10px; }
 }
