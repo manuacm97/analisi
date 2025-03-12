@@ -147,19 +147,19 @@ button:hover {
     justify-content: space-between;
 }
 
-#risultatiSquadraA, #risultatiSquadraB, #percentualiEsiti, #tabellaPartiteSalvati {
+#risultatiSquadraA, #risultatiSquadraB, #percentualiEsiti {
     width: 100%;
     background-color: #fff;
     border: 2px solid #2c6e49;
     border-radius: 10px;
 }
 
-#risultatiSquadraA th, #risultatiSquadraB th, #percentualiEsiti th, #tabellaPartiteSalvati th {
+#risultatiSquadraA th, #risultatiSquadraB th, #percentualiEsiti th {
     background-color: #2c6e49;
     padding: 8px;
 }
 
-#risultatiSquadraA td, #risultatiSquadraB td, #percentualiEsiti td, #tabellaPartiteSalvati td {
+#risultatiSquadraA td, #risultatiSquadraB td, #percentualiEsiti td {
     padding: 6px;
 }
 
@@ -178,6 +178,65 @@ button:hover {
     background-color: #e6f0ea;
     padding: 4px 8px;
     border-radius: 5px;
+}
+
+.squadra-buttons {
+    margin-top: 5px;
+    display: flex;
+    gap: 5px;
+}
+
+.squadra-buttons button {
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+.elimina-btn {
+    background-color: #e74c3c;
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+.elimina-btn:hover {
+    background-color: #c0392b;
+}
+
+.esito-select.vincente {
+    background-color: #2ecc71;
+    color: white;
+}
+
+.esito-select.perdente {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.generatore {
+    margin-bottom: 20px;
+}
+
+.generatore summary {
+    font-weight: bold;
+    cursor: pointer;
+    color: #2c6e49;
+}
+
+.generatore-form {
+    margin-top: 10px;
+}
+
+.generatore-form label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.generatore-form textarea {
+    width: 100%;
+    padding: 8px;
+    font-size: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    resize: vertical;
 }
 
 /* Media Queries per Mobile */
@@ -204,6 +263,8 @@ button:hover {
     button { padding: 8px 15px; font-size: 12px; margin: 0; }
     .punteggio { font-size: 16px; }
     #risultati, #partiteSalvati { margin-top: 20px; padding: 15px; }
+    .squadra-buttons { flex-direction: column; }
+    .elimina-btn { padding: 4px 8px; font-size: 10px; }
 }
 
 @media (max-width: 480px) {

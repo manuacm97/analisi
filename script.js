@@ -21,11 +21,12 @@ function calcolaRisultati() {
     document.getElementById('colonnaSquadraB').textContent = nomeSquadraB;
 
     // Squadra A
-    let golFattiA = [], golSubitiA = [], casaTrasfertaA = [];
+    let golFattiA = [], golSubitiA = [], casaTrasfertaA = [], avversariA = [];
     for (let i = 1; i <= 6; i++) {
         golFattiA.push(parseInt(formData.get(`golFattiA${i}`)) || 0);
         golSubitiA.push(parseInt(formData.get(`golSubitiA${i}`)) || 0);
         casaTrasfertaA.push(formData.get(`casaTrasfertaA${i}`).toUpperCase());
+        avversariA.push(formData.get(`avversarioA${i}`) || '');
         const esito = golFattiA[i-1] > golSubitiA[i-1] ? 'V' : (golFattiA[i-1] < golSubitiA[i-1] ? 'S' : 'P');
         const esitoCell = document.querySelectorAll('#squadraA .esito')[i-1];
         esitoCell.textContent = esito;
@@ -66,11 +67,12 @@ function calcolaRisultati() {
     let punteggioCoppeA = punteggioTotaleA + coeffA;
 
     // Squadra B
-    let golFattiB = [], golSubitiB = [], casaTrasfertaB = [];
+    let golFattiB = [], golSubitiB = [], casaTrasfertaB = [], avversariB = [];
     for (let i = 1; i <= 6; i++) {
         golFattiB.push(parseInt(formData.get(`golFattiB${i}`)) || 0);
         golSubitiB.push(parseInt(formData.get(`golSubitiB${i}`)) || 0);
         casaTrasfertaB.push(formData.get(`casaTrasfertaB${i}`).toUpperCase());
+        avversariB.push(formData.get(`avversarioB${i}`) || '');
         const esito = golFattiB[i-1] > golSubitiB[i-1] ? 'V' : (golFattiB[i-1] < golSubitiB[i-1] ? 'S' : 'P');
         const esitoCell = document.querySelectorAll('#squadraB .esito')[i-1];
         esitoCell.textContent = esito;
@@ -111,12 +113,14 @@ function calcolaRisultati() {
     let punteggioCoppeB = punteggioTotaleB + coeffB;
 
     datiAttuali = {
-        nomeSquadraA, nomeSquadraB, golFattiA, golSubitiA, casaTrasfertaA,
-        golFattiB, golSubitiB, casaTrasfertaB, posizioneA, totSquadreA,
+        nomeSquadraA, nomeSquadraB, golFattiA, golSubitiA, casaTrasfertaA, avversariA,
+        golFattiB, golSubitiB, casaTrasfertaB, avversariB, posizioneA, totSquadreA,
         squalificheA, coeffA, posizioneB, totSquadreB, squalificheB, coeffB,
         timestamp: new Date().toLocaleString(),
         risultato: "",
-        esito: ""
+        esito: "",
+        gruppo: "",
+        schedina: 1
     };
 
     function coloraPercentuale(perc, elemento) {
@@ -237,37 +241,6 @@ function cancellaDati() {
     datiAttuali = null;
 }
 
-function ricaricaDati() {
-    const datiSalvati = JSON.parse(localStorage.getItem('ultimiDati'));
-    if (!datiSalvati) {
-        alert("Nessun dato salvato!");
-        return;
-    }
-
-    document.getElementById('nomeSquadraA').value = datiSalvati.nomeSquadraA;
-    document.getElementById('nomeSquadraB').value = datiSalvati.nomeSquadraB;
-    for (let i = 1; i <= 6; i++) {
-        document.getElementsByName(`golFattiA${i}`)[0].value = datiSalvati.golFattiA[i-1];
-        document.getElementsByName(`golSubitiA${i}`)[0].value = datiSalvati.golSubitiA[i-1];
-        document.getElementsByName(`casaTrasfertaA${i}`)[0].value = datiSalvati.casaTrasfertaA[i-1];
-        document.getElementsByName(`golFattiB${i}`)[0].value = datiSalvati.golFattiB[i-1];
-        document.getElementsByName(`golSubitiB${i}`)[0].value = datiSalvati.golSubitiB[i-1];
-        document.getElementsByName(`casaTrasfertaB${i}`)[0].value = datiSalvati.casaTrasfertaB[i-1];
-    }
-    document.getElementsByName('posizioneA')[0].value = datiSalvati.posizioneA;
-    document.getElementsByName('totSquadreA')[0].value = datiSalvati.totSquadreA;
-    document.getElementsByName('squalificheA')[0].value = datiSalvati.squalificheA;
-    document.getElementsByName('coeffA')[0].value = datiSalvati.coeffA;
-    document.getElementsByName('posizioneB')[0].value = datiSalvati.posizioneB;
-    document.getElementsByName('totSquadreB')[0].value = datiSalvati.totSquadreB;
-    document.getElementsByName('squalificheB')[0].value = datiSalvati.squalificheB;
-    document.getElementsByName('coeffB')[0].value = datiSalvati.coeffB;
-
-    giocataManuale = "";
-    datiAttuali = datiSalvati;
-    calcolaRisultati();
-}
-
 function mostraPartitePrecedenti() {
     const partitePrecedenti = JSON.parse(localStorage.getItem('partitePrecedenti')) || [];
     if (partitePrecedenti.length === 0) {
@@ -277,7 +250,7 @@ function mostraPartitePrecedenti() {
 
     let opzioni = "Seleziona una partita precedente:\n";
     partitePrecedenti.forEach((partita, index) => {
-        opzioni += `${index + 1}. ${partita.nomeSquadraA} vs ${partita.nomeSquadraB} (${partita.timestamp}) - Giocata: ${partita.giocata}\n`;
+        opzioni += `${index + 1}. ${partita.nomeSquadraA} vs ${partita.nomeSquadraB} (${partita.timestamp}) - Giocata: ${partita.giocata} - Schedina: ${partita.schedina}\n`;
     });
     const scelta = prompt(opzioni + "\nInserisci il numero della partita:");
     const indexScelto = parseInt(scelta) - 1;
@@ -294,9 +267,11 @@ function mostraPartitePrecedenti() {
         document.getElementsByName(`golFattiA${i}`)[0].value = datiSalvati.golFattiA[i-1];
         document.getElementsByName(`golSubitiA${i}`)[0].value = datiSalvati.golSubitiA[i-1];
         document.getElementsByName(`casaTrasfertaA${i}`)[0].value = datiSalvati.casaTrasfertaA[i-1];
+        document.getElementsByName(`avversarioA${i}`)[0].value = datiSalvati.avversariA[i-1];
         document.getElementsByName(`golFattiB${i}`)[0].value = datiSalvati.golFattiB[i-1];
         document.getElementsByName(`golSubitiB${i}`)[0].value = datiSalvati.golSubitiB[i-1];
         document.getElementsByName(`casaTrasfertaB${i}`)[0].value = datiSalvati.casaTrasfertaB[i-1];
+        document.getElementsByName(`avversarioB${i}`)[0].value = datiSalvati.avversariB[i-1];
     }
     document.getElementsByName('posizioneA')[0].value = datiSalvati.posizioneA;
     document.getElementsByName('totSquadreA')[0].value = datiSalvati.totSquadreA;
@@ -323,19 +298,21 @@ function eliminaPartiteSalvati() {
     }
 }
 
-function giocataScelta() {
+function salvaPartita() {
     if (!datiAttuali) {
-        alert("Calcola i risultati prima di scegliere una giocata!");
+        alert("Calcola i risultati prima di salvare la partita!");
         return;
     }
     const giocata = prompt("Inserisci la tua giocata (es. Over 2.5, 1X, Gol):");
+    const gruppo = prompt("Inserisci il nome del gruppo (opzionale):");
     if (giocata) {
         giocataManuale = giocata;
         datiAttuali.giocata = giocataManuale;
+        datiAttuali.gruppo = gruppo || "Senza Gruppo";
         let partitePrecedenti = JSON.parse(localStorage.getItem('partitePrecedenti')) || [];
         partitePrecedenti.push(datiAttuali);
         localStorage.setItem('partitePrecedenti', JSON.stringify(partitePrecedenti));
-        alert(`Giocata salvata: ${giocataManuale}`);
+        alert(`Partita salvata: ${giocataManuale} nel gruppo ${datiAttuali.gruppo}`);
         aggiornaTabellaPartite();
     } else {
         alert("Nessuna giocata inserita!");
@@ -344,26 +321,89 @@ function giocataScelta() {
 
 function aggiornaTabellaPartite() {
     const partitePrecedenti = JSON.parse(localStorage.getItem('partitePrecedenti')) || [];
-    const tbody = document.getElementById('partiteSalvatiBody');
-    tbody.innerHTML = '';
+    const container = document.getElementById('partiteSalvatiBody');
+    container.innerHTML = '';
 
-    partitePrecedenti.forEach((partita, index) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${partita.nomeSquadraA} vs ${partita.nomeSquadraB}</td>
-            <td>${partita.timestamp}</td>
-            <td>${partita.giocata}</td>
-            <td><input type="text" value="${partita.risultato || ''}" onchange="aggiornaRisultato(${index}, this.value)"></td>
-            <td>
-                <select onchange="aggiornaEsito(${index}, this.value)">
-                    <option value="" ${!partita.esito ? 'selected' : ''}>Seleziona</option>
-                    <option value="Vincente" ${partita.esito === 'Vincente' ? 'selected' : ''}>Vincente</option>
-                    <option value="Perdente" ${partita.esito === 'Perdente' ? 'selected' : ''}>Perdente</option>
-                </select>
-            </td>
-        `;
-        tbody.appendChild(row);
+    if (partitePrecedenti.length === 0) {
+        container.innerHTML = '<p>Nessuna partita salvata.</p>';
+        return;
+    }
+
+    const gruppi = {};
+    partitePrecedenti.forEach(partita => {
+        const gruppo = partita.gruppo || "Senza Gruppo";
+        if (!gruppi[gruppo]) gruppi[gruppo] = [];
+        gruppi[gruppo].push(partita);
     });
+
+    for (const gruppo in gruppi) {
+        const gruppoDiv = document.createElement('div');
+        gruppoDiv.className = 'gruppo-partite';
+        gruppoDiv.innerHTML = `<h3>${gruppo}</h3>`;
+        const table = document.createElement('table');
+        table.innerHTML = `
+            <thead>
+                <tr>
+                    <th>Squadre</th>
+                    <th>Data</th>
+                    <th>Giocata</th>
+                    <th>Risultato</th>
+                    <th>Esito</th>
+                    <th>Schedina</th>
+                    <th>Azione</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        `;
+        const tbody = table.querySelector('tbody');
+
+        gruppi[gruppo].sort((a, b) => a.schedina - b.schedina);
+
+        gruppi[gruppo].forEach((partita, indexGlobal) => {
+            const index = partitePrecedenti.indexOf(partita);
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${partita.nomeSquadraA} vs ${partita.nomeSquadraB}</td>
+                <td>${partita.timestamp}</td>
+                <td>${partita.giocata}</td>
+                <td><input type="text" value="${partita.risultato || ''}" onchange="aggiornaRisultato(${index}, this.value)"></td>
+                <td>
+                    <select class="esito-select" onchange="aggiornaEsito(${index}, this.value)">
+                        <option value="" ${!partita.esito ? 'selected' : ''}>Seleziona</option>
+                        <option value="Vincente" ${partita.esito === 'Vincente' ? 'selected' : ''}>Vincente</option>
+                        <option value="Perdente" ${partita.esito === 'Perdente' ? 'selected' : ''}>Perdente</option>
+                    </select>
+                </td>
+                <td>
+                    <select class="schedina-select" onchange="aggiornaSchedina(${index}, this.value)">
+                        ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => 
+                            `<option value="${num}" ${partita.schedina === num ? 'selected' : ''}>${num}</option>`
+                        ).join('')}
+                    </select>
+                </td>
+                <td><button class="elimina-btn" onclick="eliminaPartita(${index})">Elimina</button></td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        gruppoDiv.appendChild(table);
+        container.appendChild(gruppoDiv);
+    }
+
+    document.querySelectorAll('.esito-select').forEach(select => {
+        if (select.value === 'Vincente') select.classList.add('vincente');
+        else if (select.value === 'Perdente') select.classList.add('perdente');
+        else select.classList.remove('vincente', 'perdente');
+    });
+}
+
+function eliminaPartita(index) {
+    if (confirm("Sei sicuro di voler eliminare questa partita?")) {
+        let partitePrecedenti = JSON.parse(localStorage.getItem('partitePrecedenti')) || [];
+        partitePrecedenti.splice(index, 1);
+        localStorage.setItem('partitePrecedenti', JSON.stringify(partitePrecedenti));
+        aggiornaTabellaPartite();
+    }
 }
 
 function aggiornaRisultato(index, valore) {
@@ -376,27 +416,35 @@ function aggiornaEsito(index, valore) {
     let partitePrecedenti = JSON.parse(localStorage.getItem('partitePrecedenti')) || [];
     partitePrecedenti[index].esito = valore;
     localStorage.setItem('partitePrecedenti', JSON.stringify(partitePrecedenti));
+    aggiornaTabellaPartite();
 }
 
-// Esporta la lista delle partite salvate come file JSON
+function aggiornaSchedina(index, valore) {
+    let partitePrecedenti = JSON.parse(localStorage.getItem('partitePrecedenti')) || [];
+    partitePrecedenti[index].schedina = parseInt(valore);
+    localStorage.setItem('partitePrecedenti', JSON.stringify(partitePrecedenti));
+    aggiornaTabellaPartite();
+}
+
 function esportaPartite() {
     const partitePrecedenti = JSON.parse(localStorage.getItem('partitePrecedenti')) || [];
     if (partitePrecedenti.length === 0) {
         alert("Nessuna partita da esportare!");
         return;
     }
+    const nomeFile = prompt("Inserisci il nome del file (senza estensione):", "partite_salvate");
+    if (!nomeFile) return;
 
     const dataStr = JSON.stringify(partitePrecedenti, null, 2);
     const blob = new Blob([dataStr], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "partite_salvate.json";
+    a.download = `${nomeFile}.json`;
     a.click();
     URL.revokeObjectURL(url);
 }
 
-// Importa la lista delle partite salvate da un file JSON
 function importaPartite() {
     const input = document.createElement("input");
     input.type = "file";
@@ -409,9 +457,11 @@ function importaPartite() {
         reader.onload = function(e) {
             try {
                 const importedData = JSON.parse(e.target.result);
-                localStorage.setItem('partitePrecedenti', JSON.stringify(importedData));
+                let partitePrecedenti = JSON.parse(localStorage.getItem('partitePrecedenti')) || [];
+                partitePrecedenti = partitePrecedenti.concat(importedData);
+                localStorage.setItem('partitePrecedenti', JSON.stringify(partitePrecedenti));
                 aggiornaTabellaPartite();
-                alert("Lista importata con successo!");
+                alert("Lista importata e aggiunta con successo!");
             } catch (err) {
                 alert("Errore durante l'importazione: file non valido!");
             }
@@ -419,6 +469,166 @@ function importaPartite() {
         reader.readAsText(file);
     };
     input.click();
+}
+
+function generaFile(squadra) {
+    const form = document.getElementById('formAnalisi');
+    const formData = new FormData(form);
+    const nomeSquadra = squadra === 'A' ? document.getElementById('nomeSquadraA').value : document.getElementById('nomeSquadraB').value;
+    if (!nomeSquadra) {
+        alert("Inserisci il nome della squadra prima di generare il file!");
+        return;
+    }
+
+    let datiSquadra = {
+        nomeSquadra,
+        partite: []
+    };
+
+    for (let i = 1; i <= 6; i++) {
+        const avversario = formData.get(`avversario${squadra}${i}`) || '';
+        const golFatti = parseInt(formData.get(`golFatti${squadra}${i}`)) || 0;
+        const golSubiti = parseInt(formData.get(`golSubiti${squadra}${i}`)) || 0;
+        const casaTrasferta = formData.get(`casaTrasferta${squadra}${i}`).toUpperCase();
+        const esito = golFatti > golSubiti ? 'V' : (golFatti < golSubiti ? 'S' : 'P');
+        if (avversario) {
+            datiSquadra.partite.push({
+                avversario,
+                golCasa: casaTrasferta === 'C' ? golFatti : golSubiti,
+                golTrasferta: casaTrasferta === 'C' ? golSubiti : golFatti,
+                esito,
+                casaTrasferta
+            });
+        }
+    }
+
+    const dataStr = JSON.stringify(datiSquadra, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${nomeSquadra}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function importaFile(squadra) {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.onchange = function(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const datiImportati = JSON.parse(e.target.result);
+                const nomeCampo = squadra === 'A' ? 'nomeSquadraA' : 'nomeSquadraB';
+                document.getElementById(nomeCampo).value = datiImportati.nomeSquadra;
+                for (let i = 0; i < Math.min(6, datiImportati.partite.length); i++) {
+                    const partita = datiImportati.partite[i];
+                    document.getElementsByName(`avversario${squadra}${i+1}`)[0].value = partita.avversario;
+                    document.getElementsByName(`golFatti${squadra}${i+1}`)[0].value = partita.casaTrasferta === 'C' ? partita.golCasa : partita.golTrasferta;
+                    document.getElementsByName(`golSubiti${squadra}${i+1}`)[0].value = partita.casaTrasferta === 'C' ? partita.golTrasferta : partita.golCasa;
+                    document.getElementsByName(`casaTrasferta${squadra}${i+1}`)[0].value = partita.casaTrasferta;
+                }
+                alert(`Dati della squadra ${datiImportati.nomeSquadra} importati con successo!`);
+            } catch (err) {
+                alert("Errore durante l'importazione: file non valido!");
+            }
+        };
+        reader.readAsText(file);
+    };
+    input.click();
+}
+
+function generaFileDaTesto() {
+    const testoInput = document.getElementById('textInput').value.trim();
+    if (!testoInput) {
+        alert("Inserisci il testo con i dati della squadra prima di generare il file!");
+        return;
+    }
+
+    const righe = testoInput.split('\n').filter(riga => riga.trim() !== '');
+    if (righe.length < 5) {
+        alert("Il testo inserito non è sufficiente per generare un file!");
+        return;
+    }
+
+    let datiSquadra = {
+        nomeSquadra: "",
+        partite: []
+    };
+    const squadre = {};
+
+    // Prima scansione per determinare la squadra principale
+    for (let i = 0; i < righe.length; i += 7) {
+        if (i + 6 >= righe.length) break;
+
+        const squadra1 = righe[i + 2]; // es. "Empoli"
+        const squadra2 = righe[i + 3]; // es. "Roma"
+
+        squadre[squadra1] = (squadre[squadra1] || 0) + 1;
+        squadre[squadra2] = (squadre[squadra2] || 0) + 1;
+    }
+
+    // Trova la squadra che si ripete in tutte le partite
+    const numeroPartite = Math.floor(righe.length / 7);
+    datiSquadra.nomeSquadra = Object.keys(squadre).find(squadra => squadre[squadra] === numeroPartite);
+    if (!datiSquadra.nomeSquadra) {
+        alert("Non è stata trovata una squadra che si ripete in tutte le partite!");
+        return;
+    }
+
+    // Seconda scansione per popolare le partite
+    for (let i = 0; i < righe.length; i += 7) {
+        if (i + 6 >= righe.length) break;
+
+        const data = righe[i]; // es. "09.03.25"
+        const competizione = righe[i + 1]; // es. "SA"
+        const squadra1 = righe[i + 2]; // es. "Empoli"
+        const squadra2 = righe[i + 3]; // es. "Roma"
+        const golCasa = parseInt(righe[i + 4]) || 0; // es. "0"
+        const golTrasferta = parseInt(righe[i + 5]) || 0; // es. "1"
+        const esito = righe[i + 6].toUpperCase(); // es. "V"
+
+        const casaTrasferta = datiSquadra.nomeSquadra === squadra1 ? 'C' : 'T';
+        const avversario = casaTrasferta === 'C' ? squadra2 : squadra1;
+        const avversarioSemplificato = avversario.replace(/^(Ath\.|FC)\s+/, '');
+
+        datiSquadra.partite.push({
+            avversario: avversarioSemplificato,
+            golCasa,
+            golTrasferta,
+            esito,
+            casaTrasferta
+        });
+    }
+
+    const dataStr = JSON.stringify(datiSquadra, null, 2);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${datiSquadra.nomeSquadra}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+
+    // Aggiungi il tasto "Pulisci" dopo aver generato il file
+    const generatoreForm = document.querySelector('.generatore-form');
+    if (!document.getElementById('pulisciBtn')) {
+        const pulisciBtn = document.createElement('button');
+        pulisciBtn.id = 'pulisciBtn';
+        pulisciBtn.textContent = 'Pulisci';
+        pulisciBtn.type = 'button';
+        pulisciBtn.onclick = pulisciGeneratore;
+        generatoreForm.appendChild(pulisciBtn);
+    }
+}
+
+function pulisciGeneratore() {
+    document.getElementById('textInput').value = '';
 }
 
 // Inizializza la tabella delle partite salvate al caricamento della pagina
