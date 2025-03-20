@@ -58,7 +58,7 @@ function calcolaRisultati() {
     let totSquadreA = parseInt(formData.get('totSquadreA')) || 1;
     let pesoPosizioneA = (totSquadreA - posizioneA) / 2;
     let squalificheA = parseInt(formData.get('squalificheA')) || 0;
-    let coeffA = parseFloat(formData.get('coeffA')) || 1.0;
+    let coeffA = parseFloat(formData.get('coeffA')) || 0;
     let punteggioGeneraleA = (mediaGolFattiA * 0.15) - (mediaGolSubitiA * 0.10) + ((vittorieA / 6) * 0.25) + 
                              (pesoPosizioneA * 0.17) - (squalificheA * 0.22) + ((puntiA / 18) * 0.18);
     let punteggioCasaA = (mediaGolFattiCasaA * 0.15) - (mediaGolSubitiCasaA * 0.10) + ((vittorieCasaA / casaGolFattiA.length) * 0.25) + 
@@ -104,7 +104,7 @@ function calcolaRisultati() {
     let totSquadreB = parseInt(formData.get('totSquadreB')) || 1;
     let pesoPosizioneB = (totSquadreB - posizioneB) / 2;
     let squalificheB = parseInt(formData.get('squalificheB')) || 0;
-    let coeffB = parseFloat(formData.get('coeffB')) || 1.0;
+    let coeffB = parseFloat(formData.get('coeffB')) || 0;
     let punteggioGeneraleB = (mediaGolFattiB * 0.15) - (mediaGolSubitiB * 0.10) + ((vittorieB / 6) * 0.25) + 
                              (pesoPosizioneB * 0.17) - (squalificheB * 0.22) + ((puntiB / 18) * 0.18);
     let punteggioCasaB = (mediaGolFattiTrasfertaB * 0.15) - (mediaGolSubitiTrasfertaB * 0.10) + ((vittorieTrasfertaB / trasfertaGolFattiB.length) * 0.25) + 
@@ -227,6 +227,14 @@ function calcolaRisultati() {
     coloraPercentuale(totaliTot.filter(t => t >= 3 && t <= 5).length / 12 * 100, document.getElementById('mg35Tot'));
 
     localStorage.setItem('ultimiDati', JSON.stringify(datiAttuali));
+    togglePunteggioCoppe(); // Aggiorna la visibilità del Punteggio Coppe
+}
+
+function togglePunteggioCoppe() {
+    const mostra = document.getElementById('mostraPunteggioCoppe').checked;
+    document.querySelectorAll('.punteggio-coppe').forEach(row => {
+        row.style.display = mostra ? '' : 'none';
+    });
 }
 
 function cancellaDati() {
@@ -250,7 +258,7 @@ function mostraPartitePrecedenti() {
 
     let opzioni = "Seleziona una partita precedente:\n";
     partitePrecedenti.forEach((partita, index) => {
-        opzioni += `${index + 1}. ${partita.nomeSquadraA} vs ${partita.nomeSquadraB} (${partita.timestamp}) - Giocata: ${partita.giocata} - Schedina: ${partita.schedina}\n`;
+        opzioni += `${index + 1}. ${partita.nomeSquadraA} vs ${partita.nomeSquadraB} - Giocata: ${partita.giocata} - Schedina: ${partita.schedina}\n`;
     });
     const scelta = prompt(opzioni + "\nInserisci il numero della partita:");
     const indexScelto = parseInt(scelta) - 1;
@@ -332,63 +340,99 @@ function aggiornaTabellaPartite() {
     const gruppi = {};
     partitePrecedenti.forEach(partita => {
         const gruppo = partita.gruppo || "Senza Gruppo";
-        if (!gruppi[gruppo]) gruppi[gruppo] = [];
-        gruppi[gruppo].push(partita);
+        if (!gruppi[gruppo]) gruppi[gruppo] = {};
+        const schedina = partita.schedina || 1;
+        if (!gruppi[gruppo][schedina]) gruppi[gruppo][schedina] = [];
+        gruppi[gruppo][schedina].push(partita);
     });
+
+    let totaleVincente = 0;
+    let totalePartite = partitePrecedenti.length;
 
     for (const gruppo in gruppi) {
         const gruppoDiv = document.createElement('div');
         gruppoDiv.className = 'gruppo-partite';
         gruppoDiv.innerHTML = `<h3>${gruppo}</h3>`;
-        const table = document.createElement('table');
-        table.innerHTML = `
-            <thead>
-                <tr>
-                    <th>Squadre</th>
-                    <th>Data</th>
-                    <th>Giocata</th>
-                    <th>Risultato</th>
-                    <th>Esito</th>
-                    <th>Schedina</th>
-                    <th>Azione</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        `;
-        const tbody = table.querySelector('tbody');
+        
+        const gruppoVincente = Object.values(gruppi[gruppo]).flat().filter(p => p.esito === 'Vincente').length;
+        const gruppoTotale = Object.values(gruppi[gruppo]).flat().length;
+        const percGruppo = gruppoTotale ? (gruppoVincente / gruppoTotale * 100).toFixed(1) : 0;
+        totaleVincente += gruppoVincente;
 
-        gruppi[gruppo].sort((a, b) => a.schedina - b.schedina);
+        const percSpanGruppo = document.createElement('span');
+        percSpanGruppo.className = 'perc-vincente';
+        percSpanGruppo.textContent = `Vincente: ${percGruppo}%`;
+        gruppoDiv.appendChild(percSpanGruppo);
 
-        gruppi[gruppo].forEach((partita, indexGlobal) => {
-            const index = partitePrecedenti.indexOf(partita);
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${partita.nomeSquadraA} vs ${partita.nomeSquadraB}</td>
-                <td>${partita.timestamp}</td>
-                <td>${partita.giocata}</td>
-                <td><input type="text" value="${partita.risultato || ''}" onchange="aggiornaRisultato(${index}, this.value)"></td>
-                <td>
-                    <select class="esito-select" onchange="aggiornaEsito(${index}, this.value)">
-                        <option value="" ${!partita.esito ? 'selected' : ''}>Seleziona</option>
-                        <option value="Vincente" ${partita.esito === 'Vincente' ? 'selected' : ''}>Vincente</option>
-                        <option value="Perdente" ${partita.esito === 'Perdente' ? 'selected' : ''}>Perdente</option>
-                    </select>
-                </td>
-                <td>
-                    <select class="schedina-select" onchange="aggiornaSchedina(${index}, this.value)">
-                        ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => 
-                            `<option value="${num}" ${partita.schedina === num ? 'selected' : ''}>${num}</option>`
-                        ).join('')}
-                    </select>
-                </td>
-                <td><button class="elimina-btn" onclick="eliminaPartita(${index})">Elimina</button></td>
+        for (const schedina in gruppi[gruppo]) {
+            const sottogruppoDiv = document.createElement('div');
+            sottogruppoDiv.className = 'sottogruppo-partite';
+            sottogruppoDiv.innerHTML = `<h4>Schedina ${schedina}</h4>`;
+
+            const sottogruppoVincente = gruppi[gruppo][schedina].filter(p => p.esito === 'Vincente').length;
+            const sottogruppoTotale = gruppi[gruppo][schedina].length;
+            const percSottogruppo = sottogruppoTotale ? (sottogruppoVincente / sottogruppoTotale * 100).toFixed(1) : 0;
+
+            const percSpanSottogruppo = document.createElement('span');
+            percSpanSottogruppo.className = 'perc-vincente';
+            percSpanSottogruppo.textContent = `Vincente: ${percSottogruppo}%`;
+            sottogruppoDiv.appendChild(percSpanSottogruppo);
+
+            const table = document.createElement('table');
+            table.innerHTML = `
+                <thead>
+                    <tr>
+                        <th>Squadre</th>
+                        <th>Giocata</th>
+                        <th>Risultato</th>
+                        <th>Esito</th>
+                        <th>Schedina</th>
+                        <th>Azione</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
             `;
-            tbody.appendChild(row);
-        });
+            const tbody = table.querySelector('tbody');
 
-        gruppoDiv.appendChild(table);
+            gruppi[gruppo][schedina].sort((a, b) => a.timestamp - b.timestamp);
+
+            gruppi[gruppo][schedina].forEach((partita, indexGlobal) => {
+                const index = partitePrecedenti.indexOf(partita);
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${partita.nomeSquadraA} vs ${partita.nomeSquadraB}</td>
+                    <td><input type="text" class="gioco-input" value="${partita.giocata}" onchange="aggiornaGiocata(${index}, this.value)"></td>
+                    <td><input type="text" value="${partita.risultato || ''}" onchange="aggiornaRisultato(${index}, this.value)"></td>
+                    <td>
+                        <select class="esito-select" onchange="aggiornaEsito(${index}, this.value)">
+                            <option value="" ${!partita.esito ? 'selected' : ''}>Seleziona</option>
+                            <option value="Vincente" ${partita.esito === 'Vincente' ? 'selected' : ''}>Vincente</option>
+                            <option value="Perdente" ${partita.esito === 'Perdente' ? 'selected' : ''}>Perdente</option>
+                        </select>
+                    </td>
+                    <td>
+                        <select class="schedina-select" onchange="aggiornaSchedina(${index}, this.value)">
+                            ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(num => 
+                                `<option value="${num}" ${partita.schedina === num ? 'selected' : ''}>${num}</option>`
+                            ).join('')}
+                        </select>
+                    </td>
+                    <td><button class="elimina-btn" onclick="eliminaPartita(${index})">Elimina</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            sottogruppoDiv.appendChild(table);
+            gruppoDiv.appendChild(sottogruppoDiv);
+        }
+
         container.appendChild(gruppoDiv);
     }
+
+    const percTotale = totalePartite ? (totaleVincente / totalePartite * 100).toFixed(1) : 0;
+    const percTotaleDiv = document.createElement('div');
+    percTotaleDiv.innerHTML = `<h3>Totale</h3><span class="perc-vincente">Vincente: ${percTotale}%</span>`;
+    container.appendChild(percTotaleDiv);
 
     document.querySelectorAll('.esito-select').forEach(select => {
         if (select.value === 'Vincente') select.classList.add('vincente');
@@ -424,6 +468,12 @@ function aggiornaSchedina(index, valore) {
     partitePrecedenti[index].schedina = parseInt(valore);
     localStorage.setItem('partitePrecedenti', JSON.stringify(partitePrecedenti));
     aggiornaTabellaPartite();
+}
+
+function aggiornaGiocata(index, valore) {
+    let partitePrecedenti = JSON.parse(localStorage.getItem('partitePrecedenti')) || [];
+    partitePrecedenti[index].giocata = valore;
+    localStorage.setItem('partitePrecedenti', JSON.stringify(partitePrecedenti));
 }
 
 function esportaPartite() {
@@ -469,6 +519,18 @@ function importaPartite() {
         reader.readAsText(file);
     };
     input.click();
+}
+
+function screenshotPartite() {
+    const section = document.getElementById('partiteSalvati');
+    html2canvas(section).then(canvas => {
+        const link = document.createElement('a');
+        link.download = 'partite_salvate.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+    }).catch(err => {
+        alert("Errore durante la creazione dello screenshot: " + err.message);
+    });
 }
 
 function generaFile(squadra) {
@@ -562,18 +624,16 @@ function generaFileDaTesto() {
     };
     const squadre = {};
 
-    // Prima scansione per determinare la squadra principale
     for (let i = 0; i < righe.length; i += 7) {
         if (i + 6 >= righe.length) break;
 
-        const squadra1 = righe[i + 2]; // es. "Empoli"
-        const squadra2 = righe[i + 3]; // es. "Roma"
+        const squadra1 = righe[i + 2];
+        const squadra2 = righe[i + 3];
 
         squadre[squadra1] = (squadre[squadra1] || 0) + 1;
         squadre[squadra2] = (squadre[squadra2] || 0) + 1;
     }
 
-    // Trova la squadra che si ripete in tutte le partite
     const numeroPartite = Math.floor(righe.length / 7);
     datiSquadra.nomeSquadra = Object.keys(squadre).find(squadra => squadre[squadra] === numeroPartite);
     if (!datiSquadra.nomeSquadra) {
@@ -581,17 +641,16 @@ function generaFileDaTesto() {
         return;
     }
 
-    // Seconda scansione per popolare le partite
     for (let i = 0; i < righe.length; i += 7) {
         if (i + 6 >= righe.length) break;
 
-        const data = righe[i]; // es. "09.03.25"
-        const competizione = righe[i + 1]; // es. "SA"
-        const squadra1 = righe[i + 2]; // es. "Empoli"
-        const squadra2 = righe[i + 3]; // es. "Roma"
-        const golCasa = parseInt(righe[i + 4]) || 0; // es. "0"
-        const golTrasferta = parseInt(righe[i + 5]) || 0; // es. "1"
-        const esito = righe[i + 6].toUpperCase(); // es. "V"
+        const data = righe[i];
+        const competizione = righe[i + 1];
+        const squadra1 = righe[i + 2];
+        const squadra2 = righe[i + 3];
+        const golCasa = parseInt(righe[i + 4]) || 0;
+        const golTrasferta = parseInt(righe[i + 5]) || 0;
+        const esito = righe[i + 6].toUpperCase();
 
         const casaTrasferta = datiSquadra.nomeSquadra === squadra1 ? 'C' : 'T';
         const avversario = casaTrasferta === 'C' ? squadra2 : squadra1;
@@ -615,7 +674,6 @@ function generaFileDaTesto() {
     a.click();
     URL.revokeObjectURL(url);
 
-    // Aggiungi il tasto "Pulisci" dopo aver generato il file
     const generatoreForm = document.querySelector('.generatore-form');
     if (!document.getElementById('pulisciBtn')) {
         const pulisciBtn = document.createElement('button');
@@ -631,7 +689,6 @@ function pulisciGeneratore() {
     document.getElementById('textInput').value = '';
 }
 
-// Inizializza la tabella delle partite salvate al caricamento della pagina
 document.addEventListener("DOMContentLoaded", () => {
     aggiornaTabellaPartite();
 });
