@@ -13,6 +13,27 @@ body {
     padding: 30px;
     border-radius: 15px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+#homeButton {
+    display: block;
+    margin: 0 auto 20px;
+    background-color: #2c6e49;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    position: sticky;
+    top: 10px;
+    z-index: 1000;
+}
+
+#homeButton:hover {
+    background-color: #1a3c34;
 }
 
 h1 {
@@ -32,6 +53,12 @@ h3 {
     color: #2c6e49;
     font-size: 16px;
     margin-top: 30px;
+}
+
+h4 {
+    color: #2c6e49;
+    font-size: 14px;
+    margin-bottom: 10px;
 }
 
 .nomi-squadre {
@@ -134,8 +161,22 @@ button:hover {
     background-color: #1a3c34;
 }
 
-#risultati, #partiteSalvati {
-    margin-top: 40px;
+.modulo {
+    margin-top: 20px;
+}
+
+.modulo summary {
+    font-weight: bold;
+    cursor: pointer;
+    color: #2c6e49;
+    font-size: 18px;
+    padding: 10px;
+    background-color: #e6f0ea;
+    border-radius: 5px;
+}
+
+#risultati, #percentualiEsitiSection, #tendenzaCasaTrasferta, #analisiDettagliata, #partiteSalvati, #storicoGiocate {
+    margin-top: 20px;
     padding: 20px;
     background-color: #f9f9f9;
     border-radius: 10px;
@@ -147,19 +188,26 @@ button:hover {
     justify-content: space-between;
 }
 
-#risultatiSquadraA, #risultatiSquadraB, #percentualiEsiti {
+#risultatiSquadraA, #risultatiSquadraB, #percentualiEsiti, #tendenzaCasaTrasfertaTable, #storicoGiocateTable, #statisticheChiave {
     width: 100%;
     background-color: #fff;
     border: 2px solid #2c6e49;
     border-radius: 10px;
 }
 
-#risultatiSquadraA th, #risultatiSquadraB th, #percentualiEsiti th {
+#risultatiSquadraA th, #risultatiSquadraB th, #percentualiEsiti th, #tendenzaCasaTrasfertaTable th, #storicoGiocateTable th, #statisticheChiave th {
     background-color: #2c6e49;
     padding: 8px;
 }
 
-#risultatiSquadraA td, #risultatiSquadraB td, #percentualiEsiti td {
+#risultatiSquadraA td, #risultatiSquadraB td, #percentualiEsiti td, #tendenzaCasaTrasfertaTable td, #storicoGiocateTable td, #statisticheChiave td {
+    padding: 6px;
+}
+
+#sequenzaA, #sequenzaB {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
     padding: 6px;
 }
 
@@ -266,13 +314,65 @@ input[type="checkbox"] {
     margin-top: 10px;
 }
 
+/* Stili per Analisi Dettagliata */
+.analisi-container {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #fff;
+    border: 2px solid #2c6e49;
+    border-radius: 10px;
+}
+
+#confrontoForma, #predizioneEsito {
+    padding: 10px;
+}
+
+#confrontoForma p, #predizioneEsito p {
+    margin: 5px 0;
+    color: #1a3c34;
+}
+
+.highlight {
+    font-weight: bold;
+    color: #2c6e49;
+    background-color: #e6f0ea;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+/* Stili per Storico Giocate */
+.sortable {
+    cursor: pointer;
+    position: relative;
+}
+
+.sort-arrow {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    margin-left: 5px;
+    vertical-align: middle;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+}
+
+.sort-arrow.asc {
+    border-bottom: 6px solid white;
+}
+
+.sort-arrow.desc {
+    border-top: 6px solid white;
+}
+
 /* Media Queries per Mobile */
 @media (max-width: 768px) {
     body { padding: 10px; }
     .container { padding: 15px; }
+    #homeButton { padding: 10px 20px; font-size: 14px; top: 5px; }
     h1 { font-size: 24px; }
     h2 { font-size: 16px; }
     h3 { font-size: 14px; }
+    h4 { font-size: 12px; }
     .nomi-squadre { flex-direction: column; align-items: center; gap: 10px; }
     .tabelle-affiancate { flex-direction: column; }
     .tabelle-risultati { flex-direction: column; }
@@ -289,11 +389,13 @@ input[type="checkbox"] {
     .buttons { display: flex; flex-direction: column; gap: 10px; align-items: center; }
     button { padding: 8px 15px; font-size: 12px; margin: 0; }
     .punteggio { font-size: 16px; }
-    #risultati, #partiteSalvati { margin-top: 20px; padding: 15px; }
+    #risultati, #percentualiEsitiSection, #tendenzaCasaTrasferta, #analisiDettagliata, #partiteSalvati, #storicoGiocate { margin-top: 10px; padding: 15px; }
     .squadra-buttons { flex-direction: column; }
     .elimina-btn { padding: 4px 8px; font-size: 10px; }
     .gioco-input { width: 60px; }
     .sottogruppo-partite { margin-left: 10px; }
+    .modulo summary { font-size: 16px; padding: 8px; }
+    .analisi-container { padding: 10px; }
 }
 
 @media (max-width: 480px) {
@@ -302,4 +404,8 @@ input[type="checkbox"] {
     select, input[type="text"], input[type="number"] { font-size: 10px; }
     button { padding: 6px 12px; font-size: 10px; }
     .gioco-input { width: 50px; }
+    #homeButton { padding: 8px 15px; font-size: 12px; }
+    .modulo summary { font-size: 14px; padding: 6px; }
+    .punteggio { font-size: 14px; }
+    .analisi-container { padding: 8px; }
 }

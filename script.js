@@ -19,15 +19,20 @@ function calcolaRisultati() {
     document.getElementById('nomeRisultatiB').textContent = nomeSquadraB;
     document.getElementById('colonnaSquadraA').textContent = nomeSquadraA;
     document.getElementById('colonnaSquadraB').textContent = nomeSquadraB;
+    document.getElementById('casaSquadraA').textContent = `${nomeSquadraA} (Casa)`;
+    document.getElementById('trasfertaSquadraB').textContent = `${nomeSquadraB} (Trasferta)`;
+    document.getElementById('nomeStatA').textContent = nomeSquadraA;
+    document.getElementById('nomeStatB').textContent = nomeSquadraB;
 
     // Squadra A
-    let golFattiA = [], golSubitiA = [], casaTrasfertaA = [], avversariA = [];
+    let golFattiA = [], golSubitiA = [], casaTrasfertaA = [], avversariA = [], esitiA = [];
     for (let i = 1; i <= 6; i++) {
         golFattiA.push(parseInt(formData.get(`golFattiA${i}`)) || 0);
         golSubitiA.push(parseInt(formData.get(`golSubitiA${i}`)) || 0);
         casaTrasfertaA.push(formData.get(`casaTrasfertaA${i}`).toUpperCase());
         avversariA.push(formData.get(`avversarioA${i}`) || '');
         const esito = golFattiA[i-1] > golSubitiA[i-1] ? 'V' : (golFattiA[i-1] < golSubitiA[i-1] ? 'S' : 'P');
+        esitiA.push(esito);
         const esitoCell = document.querySelectorAll('#squadraA .esito')[i-1];
         esitoCell.textContent = esito;
         esitoCell.className = 'esito ' + (esito === 'V' ? 'vittoria' : esito === 'P' ? 'pareggio' : 'sconfitta');
@@ -56,24 +61,26 @@ function calcolaRisultati() {
 
     let posizioneA = parseInt(formData.get('posizioneA')) || 1;
     let totSquadreA = parseInt(formData.get('totSquadreA')) || 1;
-    let pesoPosizioneA = (totSquadreA - posizioneA) / 2;
+    let pesoPosizioneA = (totSquadreA - posizioneA + 1) / totSquadreA;
     let squalificheA = parseInt(formData.get('squalificheA')) || 0;
     let coeffA = parseFloat(formData.get('coeffA')) || 0;
     let punteggioGeneraleA = (mediaGolFattiA * 0.15) - (mediaGolSubitiA * 0.10) + ((vittorieA / 6) * 0.25) + 
                              (pesoPosizioneA * 0.17) - (squalificheA * 0.22) + ((puntiA / 18) * 0.18);
-    let punteggioCasaA = (mediaGolFattiCasaA * 0.15) - (mediaGolSubitiCasaA * 0.10) + ((vittorieCasaA / casaGolFattiA.length) * 0.25) + 
+    let punteggioCasaA = (mediaGolFattiCasaA * 0.15) - (mediaGolSubitiCasaA * 0.10) + 
+                        ((casaGolFattiA.length ? vittorieCasaA / casaGolFattiA.length : 0) * 0.25) + 
                         (pesoPosizioneA * 0.17) - (squalificheA * 0.22) + ((puntiA / 18) * 0.18) + 0.2;
     let punteggioTotaleA = (punteggioGeneraleA * 0.7) + (punteggioCasaA * 0.3);
     let punteggioCoppeA = punteggioTotaleA + coeffA;
 
     // Squadra B
-    let golFattiB = [], golSubitiB = [], casaTrasfertaB = [], avversariB = [];
+    let golFattiB = [], golSubitiB = [], casaTrasfertaB = [], avversariB = [], esitiB = [];
     for (let i = 1; i <= 6; i++) {
         golFattiB.push(parseInt(formData.get(`golFattiB${i}`)) || 0);
         golSubitiB.push(parseInt(formData.get(`golSubitiB${i}`)) || 0);
         casaTrasfertaB.push(formData.get(`casaTrasfertaB${i}`).toUpperCase());
         avversariB.push(formData.get(`avversarioB${i}`) || '');
         const esito = golFattiB[i-1] > golSubitiB[i-1] ? 'V' : (golFattiB[i-1] < golSubitiB[i-1] ? 'S' : 'P');
+        esitiB.push(esito);
         const esitoCell = document.querySelectorAll('#squadraB .esito')[i-1];
         esitoCell.textContent = esito;
         esitoCell.className = 'esito ' + (esito === 'V' ? 'vittoria' : esito === 'P' ? 'pareggio' : 'sconfitta');
@@ -102,19 +109,20 @@ function calcolaRisultati() {
 
     let posizioneB = parseInt(formData.get('posizioneB')) || 1;
     let totSquadreB = parseInt(formData.get('totSquadreB')) || 1;
-    let pesoPosizioneB = (totSquadreB - posizioneB) / 2;
+    let pesoPosizioneB = (totSquadreB - posizioneB + 1) / totSquadreB;
     let squalificheB = parseInt(formData.get('squalificheB')) || 0;
     let coeffB = parseFloat(formData.get('coeffB')) || 0;
     let punteggioGeneraleB = (mediaGolFattiB * 0.15) - (mediaGolSubitiB * 0.10) + ((vittorieB / 6) * 0.25) + 
                              (pesoPosizioneB * 0.17) - (squalificheB * 0.22) + ((puntiB / 18) * 0.18);
-    let punteggioCasaB = (mediaGolFattiTrasfertaB * 0.15) - (mediaGolSubitiTrasfertaB * 0.10) + ((vittorieTrasfertaB / trasfertaGolFattiB.length) * 0.25) + 
-                         (pesoPosizioneB * 0.17) - (squalificheB * 0.22) + ((puntiB / 18) * 0.18);
-    let punteggioTotaleB = (punteggioGeneraleB * 0.7) + (punteggioCasaB * 0.3);
+    let punteggioTrasfertaB = (mediaGolFattiTrasfertaB * 0.15) - (mediaGolSubitiTrasfertaB * 0.10) + 
+                              ((trasfertaGolFattiB.length ? vittorieTrasfertaB / trasfertaGolFattiB.length : 0) * 0.25) + 
+                              (pesoPosizioneB * 0.17) - (squalificheB * 0.22) + ((puntiB / 18) * 0.18);
+    let punteggioTotaleB = (punteggioGeneraleB * 0.7) + (punteggioTrasfertaB * 0.3);
     let punteggioCoppeB = punteggioTotaleB + coeffB;
 
     datiAttuali = {
-        nomeSquadraA, nomeSquadraB, golFattiA, golSubitiA, casaTrasfertaA, avversariA,
-        golFattiB, golSubitiB, casaTrasfertaB, avversariB, posizioneA, totSquadreA,
+        nomeSquadraA, nomeSquadraB, golFattiA, golSubitiA, casaTrasfertaA, avversariA, esitiA,
+        golFattiB, golSubitiB, casaTrasfertaB, avversariB, esitiB, posizioneA, totSquadreA,
         squalificheA, coeffA, posizioneB, totSquadreB, squalificheB, coeffB,
         timestamp: new Date().toLocaleString(),
         risultato: "",
@@ -122,6 +130,24 @@ function calcolaRisultati() {
         gruppo: "",
         schedina: 1
     };
+
+    // Sequenza Recente
+    const sequenzaA = document.getElementById('sequenzaA');
+    const sequenzaB = document.getElementById('sequenzaB');
+    sequenzaA.innerHTML = '';
+    sequenzaB.innerHTML = '';
+    esitiA.forEach(esito => {
+        const span = document.createElement('span');
+        span.textContent = esito;
+        span.className = 'esito ' + (esito === 'V' ? 'vittoria' : esito === 'P' ? 'pareggio' : 'sconfitta');
+        sequenzaA.appendChild(span);
+    });
+    esitiB.forEach(esito => {
+        const span = document.createElement('span');
+        span.textContent = esito;
+        span.className = 'esito ' + (esito === 'V' ? 'vittoria' : esito === 'P' ? 'pareggio' : 'sconfitta');
+        sequenzaB.appendChild(span);
+    });
 
     function coloraPercentuale(perc, elemento) {
         const r = Math.round(255 * (1 - perc / 100));
@@ -177,7 +203,7 @@ function calcolaRisultati() {
     document.getElementById('pesoPosizioneB').textContent = pesoPosizioneB.toFixed(2);
     document.getElementById('formaB').textContent = puntiB;
     document.getElementById('punteggioB').textContent = punteggioGeneraleB.toFixed(2);
-    document.getElementById('punteggioCasaB').textContent = punteggioCasaB.toFixed(2);
+    document.getElementById('punteggioCasaB').textContent = punteggioTrasfertaB.toFixed(2);
     document.getElementById('punteggioTotaleB').textContent = punteggioTotaleB.toFixed(2);
     document.getElementById('punteggioCoppeB').textContent = punteggioCoppeB.toFixed(2);
     document.getElementById('punteggioB').className = 'punteggio';
@@ -189,9 +215,12 @@ function calcolaRisultati() {
     let totaliA = golFattiA.map((gf, i) => gf + golSubitiA[i]);
     let totaliB = golFattiB.map((gf, i) => gf + golSubitiB[i]);
     let totaliTot = [...totaliA, ...totaliB];
+    let casaTotaliA = casaGolFattiA.map((gf, i) => gf + casaGolSubitiA[i]);
+    let trasfertaTotaliB = trasfertaGolFattiB.map((gf, i) => gf + trasfertaGolSubitiB[i]);
 
     coloraPercentuale(golFattiA.filter((gf, i) => gf > 0 && golSubitiA[i] > 0).length / 6 * 100, document.getElementById('golA'));
     coloraPercentuale(golFattiA.filter((gf, i) => gf === 0 || golSubitiA[i] === 0).length / 6 * 100, document.getElementById('nogolA'));
+    coloraPercentuale(golSubitiA.filter(g => g === 0).length / 6 * 100, document.getElementById('cleanSheetA'));
     coloraPercentuale(totaliA.filter(t => t > 2).length / 6 * 100, document.getElementById('over25A'));
     coloraPercentuale(totaliA.filter(t => t <= 2).length / 6 * 100, document.getElementById('under25A'));
     coloraPercentuale(totaliA.filter(t => t > 3).length / 6 * 100, document.getElementById('over35A'));
@@ -204,6 +233,7 @@ function calcolaRisultati() {
 
     coloraPercentuale(golFattiB.filter((gf, i) => gf > 0 && golSubitiB[i] > 0).length / 6 * 100, document.getElementById('golB'));
     coloraPercentuale(golFattiB.filter((gf, i) => gf === 0 || golSubitiB[i] === 0).length / 6 * 100, document.getElementById('nogolB'));
+    coloraPercentuale(golSubitiB.filter(g => g === 0).length / 6 * 100, document.getElementById('cleanSheetB'));
     coloraPercentuale(totaliB.filter(t => t > 2).length / 6 * 100, document.getElementById('over25B'));
     coloraPercentuale(totaliB.filter(t => t <= 2).length / 6 * 100, document.getElementById('under25B'));
     coloraPercentuale(totaliB.filter(t => t > 3).length / 6 * 100, document.getElementById('over35B'));
@@ -216,6 +246,7 @@ function calcolaRisultati() {
 
     coloraPercentuale(totaliTot.filter((gf, i) => (i < 6 ? golFattiA[i] : golFattiB[i-6]) > 0 && (i < 6 ? golSubitiA[i] : golSubitiB[i-6]) > 0).length / 12 * 100, document.getElementById('golTot'));
     coloraPercentuale(totaliTot.filter((gf, i) => (i < 6 ? golFattiA[i] : golFattiB[i-6]) === 0 || (i < 6 ? golSubitiA[i] : golSubitiB[i-6]) === 0).length / 12 * 100, document.getElementById('nogolTot'));
+    coloraPercentuale([...golSubitiA, ...golSubitiB].filter(g => g === 0).length / 12 * 100, document.getElementById('cleanSheetTot'));
     coloraPercentuale(totaliTot.filter(t => t > 2).length / 12 * 100, document.getElementById('over25Tot'));
     coloraPercentuale(totaliTot.filter(t => t <= 2).length / 12 * 100, document.getElementById('under25Tot'));
     coloraPercentuale(totaliTot.filter(t => t > 3).length / 12 * 100, document.getElementById('over35Tot'));
@@ -226,8 +257,88 @@ function calcolaRisultati() {
     coloraPercentuale(totaliTot.filter(t => t >= 2 && t <= 4).length / 12 * 100, document.getElementById('mg24Tot'));
     coloraPercentuale(totaliTot.filter(t => t >= 3 && t <= 5).length / 12 * 100, document.getElementById('mg35Tot'));
 
+    // Tendenza Casa/Trasferta
+    coloraPercentuale(casaGolFattiA.filter((gf, i) => gf > 0 && casaGolSubitiA[i] > 0).length / casaGolFattiA.length * 100 || 0, document.getElementById('golCasaA'));
+    coloraPercentuale(casaGolFattiA.filter((gf, i) => gf === 0 || casaGolSubitiA[i] === 0).length / casaGolFattiA.length * 100 || 0, document.getElementById('nogolCasaA'));
+    coloraPercentuale(casaGolSubitiA.filter(g => g === 0).length / casaGolFattiA.length * 100 || 0, document.getElementById('cleanSheetCasaA'));
+    coloraPercentuale(casaTotaliA.filter(t => t > 2).length / casaGolFattiA.length * 100 || 0, document.getElementById('over25CasaA'));
+    coloraPercentuale(casaTotaliA.filter(t => t <= 2).length / casaGolFattiA.length * 100 || 0, document.getElementById('under25CasaA'));
+    coloraPercentuale(casaTotaliA.filter(t => t > 3).length / casaGolFattiA.length * 100 || 0, document.getElementById('over35CasaA'));
+    coloraPercentuale(casaTotaliA.filter(t => t <= 3).length / casaGolFattiA.length * 100 || 0, document.getElementById('under35CasaA'));
+    coloraPercentuale(casaTotaliA.filter(t => t > 4).length / casaGolFattiA.length * 100 || 0, document.getElementById('over45CasaA'));
+    coloraPercentuale(casaTotaliA.filter(t => t <= 4).length / casaGolFattiA.length * 100 || 0, document.getElementById('under45CasaA'));
+    coloraPercentuale(casaTotaliA.filter(t => t >= 1 && t <= 3).length / casaGolFattiA.length * 100 || 0, document.getElementById('mg13CasaA'));
+    coloraPercentuale(casaTotaliA.filter(t => t >= 2 && t <= 4).length / casaGolFattiA.length * 100 || 0, document.getElementById('mg24CasaA'));
+    coloraPercentuale(casaTotaliA.filter(t => t >= 3 && t <= 5).length / casaGolFattiA.length * 100 || 0, document.getElementById('mg35CasaA'));
+
+    coloraPercentuale(trasfertaGolFattiB.filter((gf, i) => gf > 0 && trasfertaGolSubitiB[i] > 0).length / trasfertaGolFattiB.length * 100 || 0, document.getElementById('golTrasfertaB'));
+    coloraPercentuale(trasfertaGolFattiB.filter((gf, i) => gf === 0 || trasfertaGolSubitiB[i] === 0).length / trasfertaGolFattiB.length * 100 || 0, document.getElementById('nogolTrasfertaB'));
+    coloraPercentuale(trasfertaGolSubitiB.filter(g => g === 0).length / trasfertaGolFattiB.length * 100 || 0, document.getElementById('cleanSheetTrasfertaB'));
+    coloraPercentuale(trasfertaTotaliB.filter(t => t > 2).length / trasfertaGolFattiB.length * 100 || 0, document.getElementById('over25TrasfertaB'));
+    coloraPercentuale(trasfertaTotaliB.filter(t => t <= 2).length / trasfertaGolFattiB.length * 100 || 0, document.getElementById('under25TrasfertaB'));
+    coloraPercentuale(trasfertaTotaliB.filter(t => t > 3).length / trasfertaGolFattiB.length * 100 || 0, document.getElementById('over35TrasfertaB'));
+    coloraPercentuale(trasfertaTotaliB.filter(t => t <= 3).length / trasfertaGolFattiB.length * 100 || 0, document.getElementById('under35TrasfertaB'));
+    coloraPercentuale(trasfertaTotaliB.filter(t => t > 4).length / trasfertaGolFattiB.length * 100 || 0, document.getElementById('over45TrasfertaB'));
+    coloraPercentuale(trasfertaTotaliB.filter(t => t <= 4).length / trasfertaGolFattiB.length * 100 || 0, document.getElementById('under45TrasfertaB'));
+    coloraPercentuale(trasfertaTotaliB.filter(t => t >= 1 && t <= 3).length / trasfertaGolFattiB.length * 100 || 0, document.getElementById('mg13TrasfertaB'));
+    coloraPercentuale(trasfertaTotaliB.filter(t => t >= 2 && t <= 4).length / trasfertaGolFattiB.length * 100 || 0, document.getElementById('mg24TrasfertaB'));
+    coloraPercentuale(trasfertaTotaliB.filter(t => t >= 3 && t <= 5).length / trasfertaGolFattiB.length * 100 || 0, document.getElementById('mg35TrasfertaB'));
+
+    // Analisi Dettagliata
+    const analisiBody = document.getElementById('analisiDettagliataBody');
+
+    // Confronto Forma
+    const confrontoForma = document.getElementById('confrontoForma');
+    confrontoForma.innerHTML = '';
+    confrontoForma.innerHTML += `<p><strong>Punti nelle ultime 6:</strong> ${nomeSquadraA} (${puntiA}) vs ${nomeSquadraB} (${puntiB}).</p>`;
+    const formaDiff = puntiA - puntiB;
+    confrontoForma.innerHTML += `<p><strong>Differenza:</strong> ${formaDiff > 0 ? `${nomeSquadraA} +${formaDiff}` : formaDiff < 0 ? `${nomeSquadraB} +${Math.abs(formaDiff)}` : 'Parità'}.</p>`;
+    confrontoForma.innerHTML += `<p><strong>Trend:</strong> ${formaDiff > 3 ? `${nomeSquadraA} in forte crescita` : formaDiff < -3 ? `${nomeSquadraB} in forte crescita` : 'Forma simile'}.</p>`;
+
+    // Statistiche Chiave (Complessive)
+    const statisticheChiave = document.getElementById('statisticheChiave').querySelector('tbody');
+    statisticheChiave.innerHTML = '';
+    const statistiche = [
+        { nome: 'Media Gol Fatti', valA: mediaGolFattiA, valB: mediaGolFattiB },
+        { nome: 'Media Gol Subiti', valA: mediaGolSubitiA, valB: mediaGolSubitiB },
+        { nome: 'Vittorie %', valA: vittorieA / 6 * 100, valB: vittorieB / 6 * 100 },
+        { nome: 'Clean Sheet %', valA: golSubitiA.filter(g => g === 0).length / 6 * 100, valB: golSubitiB.filter(g => g === 0).length / 6 * 100 },
+        { nome: 'Over 2.5 %', valA: totaliA.filter(t => t > 2).length / 6 * 100, valB: totaliB.filter(t => t > 2).length / 6 * 100 }
+    ];
+    statistiche.forEach(stat => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td>${stat.nome}</td><td>${stat.valA.toFixed(1)}${stat.nome.includes('%') ? '%' : ''}</td><td>${stat.valB.toFixed(1)}${stat.nome.includes('%') ? '%' : ''}</td>`;
+        statisticheChiave.appendChild(row);
+    });
+
+    // Predizione Esito
+    const predizioneEsito = document.getElementById('predizioneEsito');
+    predizioneEsito.innerHTML = '';
+    // Nuova formula per gol attesi più realistica
+    const golAttesiA = (mediaGolFattiA * 0.6 + mediaGolSubitiB * 0.4) * 1.1; // Bonus casa
+    const golAttesiB = (mediaGolFattiB * 0.6 + mediaGolSubitiA * 0.4) * 0.9; // Malus trasferta
+    predizioneEsito.innerHTML += `<p><strong>Gol Attesi:</strong> ${nomeSquadraA} ${golAttesiA.toFixed(1)} - ${nomeSquadraB} ${golAttesiB.toFixed(1)}</p>`;
+
+    const probVittoriaA = (golAttesiA - golAttesiB > 0.5) ? 60 + (golAttesiA - golAttesiB) * 10 : 40;
+    const probPareggio = 30 - Math.abs(golAttesiA - golAttesiB) * 5;
+    const probVittoriaB = 100 - probVittoriaA - probPareggio;
+    predizioneEsito.innerHTML += `<p><strong>Probabilità:</strong> 1 (<span class="highlight">${probVittoriaA.toFixed(0)}%</span>) - X (${probPareggio.toFixed(0)}%) - 2 (${probVittoriaB.toFixed(0)}%)</p>`;
+
+    const totalGolAttesi = golAttesiA + golAttesiB;
+    const over25FreqA = totaliA.filter(t => t > 2).length / 6 * 100;
+    const over25FreqB = totaliB.filter(t => t > 2).length / 6 * 100;
+    const over25Prob = Math.min(90, Math.max(10, (over25FreqA + over25FreqB) / 2 + (totalGolAttesi > 2.5 ? 10 : -10)));
+    const golFreqA = golFattiA.filter((gf, i) => gf > 0 && golSubitiA[i] > 0).length / 6 * 100;
+    const golFreqB = golFattiB.filter((gf, i) => gf > 0 && golSubitiB[i] > 0).length / 6 * 100;
+    const golProb = Math.min(90, Math.max(10, (golFreqA + golFreqB) / 2 + (golAttesiA > 0.5 && golAttesiB > 0.5 ? 15 : -15)));
+    predizioneEsito.innerHTML += `<p><strong>Over 2.5:</strong> <span class="highlight">${over25Prob.toFixed(0)}%</span> - Gol: <span class="highlight">${golProb.toFixed(0)}%</span></p>`;
+
+    const esitoConsigliato = probVittoriaA > 60 ? '1' : probVittoriaB > 60 ? '2' : over25Prob > 65 ? 'Over 2.5' : golProb > 65 ? 'Gol' : 'X';
+    predizioneEsito.innerHTML += `<p><strong>Consiglio Scommessa:</strong> <span class="highlight">${esitoConsigliato}</span></p>`;
+
     localStorage.setItem('ultimiDati', JSON.stringify(datiAttuali));
-    togglePunteggioCoppe(); // Aggiorna la visibilità del Punteggio Coppe
+    togglePunteggioCoppe();
+    aggiornaStoricoGiocate();
 }
 
 function togglePunteggioCoppe() {
@@ -240,11 +351,16 @@ function togglePunteggioCoppe() {
 function cancellaDati() {
     document.getElementById('formAnalisi').reset();
     document.querySelectorAll('.esito').forEach(span => span.textContent = '');
-    document.querySelectorAll('#risultati span').forEach(span => {
+    document.querySelectorAll('#risultati span, #percentualiEsiti span, #tendenzaCasaTrasfertaTable span').forEach(span => {
         span.textContent = '';
         span.style.backgroundColor = '';
         span.className = '';
     });
+    document.getElementById('sequenzaA').innerHTML = '';
+    document.getElementById('sequenzaB').innerHTML = '';
+    document.getElementById('confrontoForma').innerHTML = '';
+    document.getElementById('statisticheChiave').querySelector('tbody').innerHTML = '';
+    document.getElementById('predizioneEsito').innerHTML = '';
     giocataManuale = "";
     datiAttuali = null;
 }
@@ -302,6 +418,7 @@ function eliminaPartiteSalvati() {
         datiAttuali = null;
         giocataManuale = "";
         aggiornaTabellaPartite();
+        aggiornaStoricoGiocate();
         alert("Partite salvate eliminate!");
     }
 }
@@ -322,6 +439,7 @@ function salvaPartita() {
         localStorage.setItem('partitePrecedenti', JSON.stringify(partitePrecedenti));
         alert(`Partita salvata: ${giocataManuale} nel gruppo ${datiAttuali.gruppo}`);
         aggiornaTabellaPartite();
+        aggiornaStoricoGiocate();
     } else {
         alert("Nessuna giocata inserita!");
     }
@@ -447,6 +565,7 @@ function eliminaPartita(index) {
         partitePrecedenti.splice(index, 1);
         localStorage.setItem('partitePrecedenti', JSON.stringify(partitePrecedenti));
         aggiornaTabellaPartite();
+        aggiornaStoricoGiocate();
     }
 }
 
@@ -461,6 +580,7 @@ function aggiornaEsito(index, valore) {
     partitePrecedenti[index].esito = valore;
     localStorage.setItem('partitePrecedenti', JSON.stringify(partitePrecedenti));
     aggiornaTabellaPartite();
+    aggiornaStoricoGiocate();
 }
 
 function aggiornaSchedina(index, valore) {
@@ -474,6 +594,7 @@ function aggiornaGiocata(index, valore) {
     let partitePrecedenti = JSON.parse(localStorage.getItem('partitePrecedenti')) || [];
     partitePrecedenti[index].giocata = valore;
     localStorage.setItem('partitePrecedenti', JSON.stringify(partitePrecedenti));
+    aggiornaStoricoGiocate();
 }
 
 function esportaPartite() {
@@ -511,6 +632,7 @@ function importaPartite() {
                 partitePrecedenti = partitePrecedenti.concat(importedData);
                 localStorage.setItem('partitePrecedenti', JSON.stringify(partitePrecedenti));
                 aggiornaTabellaPartite();
+                aggiornaStoricoGiocate();
                 alert("Lista importata e aggiunta con successo!");
             } catch (err) {
                 alert("Errore durante l'importazione: file non valido!");
@@ -689,6 +811,84 @@ function pulisciGeneratore() {
     document.getElementById('textInput').value = '';
 }
 
+function aggiornaStoricoGiocate() {
+    const partitePrecedenti = JSON.parse(localStorage.getItem('partitePrecedenti')) || [];
+    const tbody = document.getElementById('storicoGiocateBody');
+    tbody.innerHTML = '';
+
+    if (partitePrecedenti.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4">Nessuna giocata salvata.</td></tr>';
+        return;
+    }
+
+    const giocateStats = {};
+    partitePrecedenti.forEach(partita => {
+        const giocata = partita.giocata;
+        if (!giocateStats[giocata]) {
+            giocateStats[giocata] = { count: 0, vincente: 0, perdente: 0 };
+        }
+        giocateStats[giocata].count++;
+        if (partita.esito === 'Vincente') giocateStats[giocata].vincente++;
+        if (partita.esito === 'Perdente') giocateStats[giocata].perdente++;
+    });
+
+    const giocateArray = Object.entries(giocateStats).map(([giocata, stats]) => ({
+        giocata,
+        frequenza: stats.count,
+        percVittoria: stats.count ? (stats.vincente / stats.count * 100).toFixed(1) : 0,
+        percPerdita: stats.count ? (stats.perdente / stats.count * 100).toFixed(1) : 0
+    }));
+
+    giocateArray.forEach(stat => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${stat.giocata}</td>
+            <td>${stat.frequenza}</td>
+            <td><span class="perc">${stat.percVittoria}%</span></td>
+            <td><span class="perc">${stat.percPerdita}%</span></td>
+        `;
+        const percVittoriaSpan = row.querySelector('td:nth-child(3) .perc');
+        const percPerditaSpan = row.querySelector('td:nth-child(4) .perc');
+        const rV = Math.round(255 * (1 - stat.percVittoria / 100));
+        const gV = Math.round(255 * (stat.percVittoria / 100));
+        const rP = Math.round(255 * (1 - stat.percPerdita / 100));
+        const gP = Math.round(255 * (stat.percPerdita / 100));
+        percVittoriaSpan.style.backgroundColor = `rgb(${rV}, ${gV}, 0)`;
+        percPerditaSpan.style.backgroundColor = `rgb(${rP}, ${gP}, 0)`;
+        tbody.appendChild(row);
+    });
+}
+
+let sortDirection = { 2: 'desc', 3: 'desc' };
+
+function ordinaStorico(colonna) {
+    const tbody = document.getElementById('storicoGiocateBody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    
+    sortDirection[colonna] = sortDirection[colonna] === 'asc' ? 'desc' : 'asc';
+    const isAsc = sortDirection[colonna] === 'asc';
+
+    rows.sort((a, b) => {
+        const valA = parseFloat(a.cells[colonna].textContent) || 0;
+        const valB = parseFloat(b.cells[colonna].textContent) || 0;
+        return isAsc ? valA - valB : valB - valA;
+    });
+
+    tbody.innerHTML = '';
+    rows.forEach(row => tbody.appendChild(row));
+
+    document.querySelectorAll('.sort-arrow').forEach(arrow => arrow.className = 'sort-arrow');
+    const header = document.querySelector(`#storicoGiocateTable th:nth-child(${colonna + 1}) .sort-arrow`);
+    header.className = `sort-arrow ${isAsc ? 'asc' : 'desc'}`;
+}
+
+function chiudiTuttiModuli() {
+    document.querySelectorAll('.modulo').forEach(modulo => {
+        modulo.removeAttribute('open');
+    });
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     aggiornaTabellaPartite();
+    aggiornaStoricoGiocate();
 });
