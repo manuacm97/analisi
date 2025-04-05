@@ -93,6 +93,7 @@ th, td {
     border: 1px solid #e0e0e0;
     padding: 6px;
     text-align: center;
+    vertical-align: middle; /* Allinea verticalmente il contenuto */
 }
 
 th {
@@ -106,6 +107,19 @@ select, input[type="text"] {
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: 12px;
+    box-sizing: border-box; /* Assicura coerenza padding/border */
+}
+
+/* Stile aggiunto per il nuovo select delle partite precedenti */
+#selezionaPartitaPrecedente {
+    padding: 4px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 12px;
+    margin: 0 10px; /* Stesso margine dei bottoni vicini */
+    height: 36px; /* Stessa altezza dei bottoni vicini */
+    vertical-align: middle; /* Allinea verticalmente con i bottoni */
+    cursor: pointer;
 }
 
 .esito {
@@ -139,6 +153,7 @@ input[type="number"] {
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: 12px;
+    box-sizing: border-box;
 }
 
 .buttons {
@@ -155,6 +170,7 @@ button {
     cursor: pointer;
     font-size: 14px;
     margin: 0 10px;
+    vertical-align: middle; /* Allinea con altri elementi inline */
 }
 
 button:hover {
@@ -204,12 +220,17 @@ button:hover {
     padding: 6px;
 }
 
+.sequenza-cell {
+    padding: 6px;
+    vertical-align: middle;
+}
+
 #sequenzaA, #sequenzaB {
     display: flex;
     gap: 5px;
     justify-content: center;
-    padding: 6px;
 }
+
 
 .perc {
     display: inline-block;
@@ -217,6 +238,8 @@ button:hover {
     border-radius: 5px;
     color: white;
     font-weight: bold;
+    min-width: 45px;
+    text-align: center;
 }
 
 .punteggio {
@@ -249,14 +272,24 @@ button:hover {
     background-color: #c0392b;
 }
 
-.esito-select.vincente {
-    background-color: #2ecc71;
-    color: white;
+.esito-select {
+     padding: 3px;
+     border: 1px solid #ccc;
+     border-radius: 5px;
+     font-size: 12px;
+     background-color: #fff;
+     color: #333;
+     cursor: pointer;
 }
-
+.esito-select.vincente {
+    background-color: #2ecc71 !important;
+    color: white !important;
+    font-weight: bold;
+}
 .esito-select.perdente {
-    background-color: #e74c3c;
-    color: white;
+    background-color: #e74c3c !important;
+    color: white !important;
+     font-weight: bold;
 }
 
 .generatore {
@@ -285,13 +318,27 @@ button:hover {
     border: 1px solid #ccc;
     border-radius: 5px;
     resize: vertical;
+    box-sizing: border-box;
 }
 
 /* Stili aggiuntivi per le nuove funzionalità */
 input[type="checkbox"] {
     margin-right: 5px;
+    vertical-align: middle;
 }
 
+.checkbox-wrapper {
+    margin-bottom: 15px;
+    text-align: left;
+}
+
+.checkbox-wrapper label {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+/* Stili per la tabella Partite Salvate */
 .perc-vincente {
     display: inline-block;
     padding: 4px 8px;
@@ -299,20 +346,71 @@ input[type="checkbox"] {
     color: white;
     font-weight: bold;
     background-color: #2c6e49;
+    margin-left: 10px;
+    font-size: 0.9em;
+    vertical-align: middle;
 }
 
-.gioco-input {
-    width: 80px;
+.gioco-input, .gruppo-input { /* Input per giocata/risultato/gruppo in tabella */
+    width: 80px; /* Larghezza base per input */
     padding: 4px;
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: 12px;
+    box-sizing: border-box;
+    text-align: center;
 }
+.gruppo-input {
+    width: 100px; /* Leggermente più largo per nomi gruppo */
+}
+
+.schedina-select {
+     width: 50px;
+     padding: 3px;
+     border: 1px solid #ccc;
+     border-radius: 5px;
+     font-size: 12px;
+     cursor: pointer;
+}
+
+
+.gruppo-partite {
+     margin-bottom: 20px;
+     border-bottom: 1px solid #eee;
+     padding-bottom: 10px;
+}
+.gruppo-partite h3 {
+     display: flex;
+     align-items: center;
+     flex-wrap: wrap;
+     gap: 10px;
+}
+
 
 .sottogruppo-partite {
     margin-left: 20px;
     margin-top: 10px;
+    border: 1px solid #f0f0f0;
+    padding: 10px;
+    border-radius: 5px;
+    background-color: #fdfdfd;
 }
+.sottogruppo-partite h4 {
+     display: flex;
+     align-items: center;
+     flex-wrap: wrap;
+     gap: 10px;
+}
+.sottogruppo-partite table {
+     margin-top: 10px;
+     border: none;
+     border-radius: 0;
+     background-color: transparent;
+}
+.sottogruppo-partite th, .sottogruppo-partite td {
+     border: 1px solid #e8e8e8;
+}
+
 
 /* Stili per Analisi Dettagliata */
 .analisi-container {
@@ -328,9 +426,31 @@ input[type="checkbox"] {
 }
 
 #confrontoForma p, #predizioneEsito p {
-    margin: 5px 0;
+    margin: 8px 0;
     color: #1a3c34;
+    line-height: 1.4;
 }
+#predizioneEsito h5 {
+     margin-top: 15px;
+     margin-bottom: 8px;
+     color: #1a3c34;
+}
+#predizioneEsito ul {
+     list-style: disc;
+     margin-left: 20px;
+     padding-left: 0;
+}
+#predizioneEsito li {
+     margin-bottom: 6px;
+     color: #333;
+}
+#predizioneEsito small {
+     display: block;
+     margin-top: 15px;
+     color: #777;
+     font-style: italic;
+}
+
 
 .highlight {
     font-weight: bold;
@@ -384,28 +504,44 @@ input[type="checkbox"] {
         font-size: 12px;
         box-sizing: border-box;
     }
+    #selezionaPartitaPrecedente {
+        width: auto; max-width: 200px; height: auto; padding: 3px; font-size: 12px;
+    }
     .esito { width: 20px; padding: 2px; }
     .parametri { flex-direction: column; align-items: flex-start; }
-    .buttons { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+    .buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; align-items: center; }
     button { padding: 8px 15px; font-size: 12px; margin: 0; }
     .punteggio { font-size: 16px; }
     #risultati, #percentualiEsitiSection, #tendenzaCasaTrasferta, #analisiDettagliata, #partiteSalvati, #storicoGiocate { margin-top: 10px; padding: 15px; }
     .squadra-buttons { flex-direction: column; }
     .elimina-btn { padding: 4px 8px; font-size: 10px; }
-    .gioco-input { width: 60px; }
+    .gioco-input, .gruppo-input { width: 60px; } /* Adatta input tabella */
+    .gruppo-input { width: 80px; }
+    .schedina-select { width: 45px; }
     .sottogruppo-partite { margin-left: 10px; }
+    .sottogruppo-partite table { font-size: 11px; } /* Riduci leggermente font tabelle interne */
     .modulo summary { font-size: 16px; padding: 8px; }
     .analisi-container { padding: 10px; }
+    .perc-vincente { margin-left: 5px; font-size: 10px; padding: 3px 6px;}
+    #predizioneEsito ul { margin-left: 15px; }
 }
 
 @media (max-width: 480px) {
     table { font-size: 10px; }
     th, td { padding: 3px; }
     select, input[type="text"], input[type="number"] { font-size: 10px; }
+     #selezionaPartitaPrecedente { font-size: 10px; max-width: 150px; }
     button { padding: 6px 12px; font-size: 10px; }
-    .gioco-input { width: 50px; }
+    .gioco-input, .gruppo-input { width: 50px; }
+    .gruppo-input { width: 70px; }
+    .schedina-select { width: 40px; }
     #homeButton { padding: 8px 15px; font-size: 12px; }
     .modulo summary { font-size: 14px; padding: 6px; }
     .punteggio { font-size: 14px; }
     .analisi-container { padding: 8px; }
+    .perc-vincente { margin-left: 5px; font-size: 9px; padding: 2px 4px; }
+    #predizioneEsito ul { margin-left: 10px; }
+    #predizioneEsito li { font-size: 11px; }
+    .sottogruppo-partite table { font-size: 9px; } /* Riduci ancora font tabelle interne */
+    .sottogruppo-partite th, .sottogruppo-partite td { padding: 2px; }
 }

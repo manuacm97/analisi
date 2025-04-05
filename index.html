@@ -6,16 +6,14 @@
     <title>Analisi Scommesse</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-    <!-- PWA -->
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#2c6e49">
+
+    <link rel="icon" href="/icons/favicon.ico" sizes="any"> <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png"> <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png"> <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png"> <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg"> <link rel="manifest" href="/manifest.json"> <meta name="theme-color" content="#2c6e49">
 </head>
 <body>
     <div class="container">
         <button id="homeButton" onclick="chiudiTuttiModuli()">Home</button>
         <h1>Analisi Scommesse Sportive</h1>
 
-        <!-- Modulo Inserimento Dati -->
         <details class="modulo" id="moduloInserimentoDati" open>
             <summary>Inserimento Dati</summary>
             <form id="formAnalisi">
@@ -27,7 +25,6 @@
                             <button type="button" onclick="importaFile('A')">Importa File</button>
                         </div>
                     </div>
-                    <button type="button" onclick="cercaTransfermarkt()">Cerca su Transfermarkt</button>
                     <div>
                         <label>Squadra Trasferta: <input type="text" id="nomeSquadraB" required></label>
                         <div class="squadra-buttons">
@@ -37,18 +34,16 @@
                     </div>
                 </div>
 
-                <!-- Generatore -->
                 <details class="generatore">
                     <summary>Generatore</summary>
                     <div class="generatore-form">
                         <label>Inserisci Dati Squadra (testo):</label>
-                        <textarea id="textInput" rows="10" placeholder="Esempio:\n09.03.25\nSA\nEmpoli\nRoma\n0\n1\nV\n06.03.25\nEL\nRoma\nAth. Bilbao\n2\n1\nV"></textarea>
+                        <textarea id="textInput" rows="10" placeholder="Esempio: (7 righe per partita)&#10;09/03/2025&#10;SA&#10;Empoli&#10;Roma&#10;0&#10;1&#10;S&#10;06/03/2025&#10;EL&#10;Roma&#10;Ath. Bilbao&#10;2&#10;1&#10;V"></textarea>
                         <button type="button" onclick="generaFileDaTesto()">Genera File</button>
-                    </div>
+                         </div>
                 </details>
 
                 <div class="tabelle-affiancate">
-                    <!-- Squadra A -->
                     <section class="squadra">
                         <h2 id="titoloSquadraA">Squadra A (Casa)</h2>
                         <table id="squadraA">
@@ -73,12 +68,10 @@
                         <div class="parametri">
                             <label>Posizione: <input type="number" name="posizioneA" min="1" required></label>
                             <label>Tot. Squadre: <input type="number" name="totSquadreA" min="1" required></label>
-                            <label>Squalifiche (0-5): <input type="number" name="squalificheA" min="0" max="5" required></label>
                             <label>Coefficiente: <input type="number" name="coeffA" min="0" step="0.1" value="0" required></label>
                         </div>
                     </section>
 
-                    <!-- Squadra B -->
                     <section class="squadra">
                         <h2 id="titoloSquadraB">Squadra B (Trasferta)</h2>
                         <table id="squadraB">
@@ -103,33 +96,34 @@
                         <div class="parametri">
                             <label>Posizione: <input type="number" name="posizioneB" min="1" required></label>
                             <label>Tot. Squadre: <input type="number" name="totSquadreB" min="1" required></label>
-                            <label>Squalifiche (0-5): <input type="number" name="squalificheB" min="0" max="5" required></label>
                             <label>Coefficiente: <input type="number" name="coeffB" min="0" step="0.1" value="0" required></label>
                         </div>
                     </section>
                 </div>
 
-                <!-- Pulsanti -->
                 <div class="buttons">
                     <button type="button" onclick="calcolaRisultati()">Calcola Risultati</button>
                     <button type="button" onclick="cancellaDati()">Cancella Dati</button>
-                    <button type="button" onclick="mostraPartitePrecedenti()">Mostra Partite Precedenti</button>
+                    <select id="selezionaPartitaPrecedente">
+                        <option value="" disabled selected>Carica Partita Precedente</option>
+                        </select>
                     <button type="button" onclick="salvaPartita()">Salva Partita</button>
                 </div>
             </form>
         </details>
 
-        <!-- Modulo Risultati -->
         <details class="modulo" id="moduloRisultati">
             <summary>Risultati</summary>
             <section id="risultati">
                 <h2>Risultati</h2>
-                <label><input type="checkbox" id="mostraPunteggioCoppe" onchange="togglePunteggioCoppe()"> Mostra Punteggio Coppe</label>
+                <div class="checkbox-wrapper">
+                     <label><input type="checkbox" id="mostraPunteggioCoppe" onchange="togglePunteggioCoppe()"> Mostra Punteggio Coppe</label>
+                </div>
                 <div class="tabelle-risultati">
                     <table id="risultatiSquadraA">
                         <thead>
                             <tr><th colspan="2" id="nomeRisultatiA">Squadra A</th></tr>
-                            <tr><td colspan="2" id="sequenzaA"></td></tr>
+                            <tr><td colspan="2" class="sequenza-cell"><div id="sequenzaA"></div></td></tr>
                         </thead>
                         <tbody>
                             <tr><td>Gol Fatti (Complessivo)</td><td><span id="golFattiA"></span></td></tr>
@@ -158,7 +152,7 @@
                     <table id="risultatiSquadraB">
                         <thead>
                             <tr><th colspan="2" id="nomeRisultatiB">Squadra B</th></tr>
-                            <tr><td colspan="2" id="sequenzaB"></td></tr>
+                            <tr><td colspan="2" class="sequenza-cell"><div id="sequenzaB"></div></td></tr>
                         </thead>
                         <tbody>
                             <tr><td>Gol Fatti (Complessivo)</td><td><span id="golFattiB"></span></td></tr>
@@ -179,8 +173,7 @@
                             <tr><td>Peso Posizione</td><td><span id="pesoPosizioneB"></span></td></tr>
                             <tr><td>Forma Recente</td><td><span id="formaB"></span></td></tr>
                             <tr><td>Punteggio Generale</td><td><span id="punteggioB"></span></td></tr>
-                            <tr><td>Punteggio Casa/Trasferta</td><td><span id="punteggioCasaB"></span></td></tr>
-                            <tr class="punteggio-coppe" style="display: none;"><td>Punteggio Coppe</td><td><span id="punteggioCoppeB"></span></td></tr>
+                            <tr><td>Punteggio Casa/Trasferta</td><td><span id="punteggioCasaB"></span></td> <tr class="punteggio-coppe" style="display: none;"><td>Punteggio Coppe</td><td><span id="punteggioCoppeB"></span></td></tr>
                             <tr><td>Punteggio Totale</td><td><span id="punteggioTotaleB"></span></td></tr>
                         </tbody>
                     </table>
@@ -188,7 +181,6 @@
             </section>
         </details>
 
-        <!-- Modulo Percentuali Esiti -->
         <details class="modulo" id="moduloPercentualiEsiti">
             <summary>Percentuali Esiti</summary>
             <section id="percentualiEsitiSection">
@@ -206,12 +198,12 @@
                         <tr><td>Gol</td><td><span id="golA"></span></td><td><span id="golB"></span></td><td><span id="golTot"></span></td></tr>
                         <tr><td>NoGol</td><td><span id="nogolA"></span></td><td><span id="nogolB"></span></td><td><span id="nogolTot"></span></td></tr>
                         <tr><td>Clean Sheet</td><td><span id="cleanSheetA"></span></td><td><span id="cleanSheetB"></span></td><td><span id="cleanSheetTot"></span></td></tr>
-                        <tr><td>Over 2.5</td><td><span id="over25A"></span></td><td><span id="over25B"></span></td><td><span id="over25Tot"></span></td></tr>
-                        <tr><td>Under 2.5</td><td><span id="under25A"></span></td><td><span id="under25B"></span></td><td><span id="under25Tot"></span></td></tr>
-                        <tr><td>Over 3.5</td><td><span id="over35A"></span></td><td><span id="over35B"></span></td><td><span id="over35Tot"></span></td></tr>
-                        <tr><td>Under 3.5</td><td><span id="under35A"></span></td><td><span id="under35B"></span></td><td><span id="under35Tot"></span></td></tr>
-                        <tr><td>Over 4.5</td><td><span id="over45A"></span></td><td><span id="over45B"></span></td><td><span id="over45Tot"></span></td></tr>
-                        <tr><td>Under 4.5</td><td><span id="under45A"></span></td><td><span id="under45B"></span></td><td><span id="under45Tot"></span></td></tr>
+                        <tr><td>Over 0.5 (Squadra)</td><td><span id="over05A"></span></td><td><span id="over05B"></span></td><td><span id="over05Tot"></span></td></tr>
+                        <tr><td>Over 1.5 (Totali)</td><td><span id="over15A"></span></td><td><span id="over15B"></span></td><td><span id="over15Tot"></span></td></tr>
+                        <tr><td>Over 2.5 (Totali)</td><td><span id="over25A"></span></td><td><span id="over25B"></span></td><td><span id="over25Tot"></span></td></tr>
+                        <tr><td>Under 2.5 (Totali)</td><td><span id="under25A"></span></td><td><span id="under25B"></span></td><td><span id="under25Tot"></span></td></tr>
+                        <tr><td>Over 3.5 (Totali)</td><td><span id="over35A"></span></td><td><span id="over35B"></span></td><td><span id="over35Tot"></span></td></tr>
+                        <tr><td>Under 3.5 (Totali)</td><td><span id="under35A"></span></td><td><span id="under35B"></span></td><td><span id="under35Tot"></span></td></tr>
                         <tr><td>Multigol 1-3</td><td><span id="mg13A"></span></td><td><span id="mg13B"></span></td><td><span id="mg13Tot"></span></td></tr>
                         <tr><td>Multigol 2-4</td><td><span id="mg24A"></span></td><td><span id="mg24B"></span></td><td><span id="mg24Tot"></span></td></tr>
                         <tr><td>Multigol 3-5</td><td><span id="mg35A"></span></td><td><span id="mg35B"></span></td><td><span id="mg35Tot"></span></td></tr>
@@ -220,7 +212,6 @@
             </section>
         </details>
 
-        <!-- Modulo Tendenza Casa/Trasferta -->
         <details class="modulo" id="moduloTendenzaCasaTrasferta">
             <summary>Tendenza Casa/Trasferta</summary>
             <section id="tendenzaCasaTrasferta">
@@ -237,12 +228,12 @@
                         <tr><td>Gol</td><td><span id="golCasaA"></span></td><td><span id="golTrasfertaB"></span></td></tr>
                         <tr><td>NoGol</td><td><span id="nogolCasaA"></span></td><td><span id="nogolTrasfertaB"></span></td></tr>
                         <tr><td>Clean Sheet</td><td><span id="cleanSheetCasaA"></span></td><td><span id="cleanSheetTrasfertaB"></span></td></tr>
-                        <tr><td>Over 2.5</td><td><span id="over25CasaA"></span></td><td><span id="over25TrasfertaB"></span></td></tr>
-                        <tr><td>Under 2.5</td><td><span id="under25CasaA"></span></td><td><span id="under25TrasfertaB"></span></td></tr>
-                        <tr><td>Over 3.5</td><td><span id="over35CasaA"></span></td><td><span id="over35TrasfertaB"></span></td></tr>
-                        <tr><td>Under 3.5</td><td><span id="under35CasaA"></span></td><td><span id="under35TrasfertaB"></span></td></tr>
-                        <tr><td>Over 4.5</td><td><span id="over45CasaA"></span></td><td><span id="over45TrasfertaB"></span></td></tr>
-                        <tr><td>Under 4.5</td><td><span id="under45CasaA"></span></td><td><span id="under45TrasfertaB"></span></td></tr>
+                        <tr><td>Over 0.5 (Squadra)</td><td><span id="over05CasaA"></span></td><td><span id="over05TrasfertaB"></span></td></tr>
+                        <tr><td>Over 1.5 (Totali)</td><td><span id="over15CasaA"></span></td><td><span id="over15TrasfertaB"></span></td></tr>
+                        <tr><td>Over 2.5 (Totali)</td><td><span id="over25CasaA"></span></td><td><span id="over25TrasfertaB"></span></td></tr>
+                        <tr><td>Under 2.5 (Totali)</td><td><span id="under25CasaA"></span></td><td><span id="under25TrasfertaB"></span></td></tr>
+                        <tr><td>Over 3.5 (Totali)</td><td><span id="over35CasaA"></span></td><td><span id="over35TrasfertaB"></span></td></tr>
+                        <tr><td>Under 3.5 (Totali)</td><td><span id="under35CasaA"></span></td><td><span id="under35TrasfertaB"></span></td></tr>
                         <tr><td>Multigol 1-3</td><td><span id="mg13CasaA"></span></td><td><span id="mg13TrasfertaB"></span></td></tr>
                         <tr><td>Multigol 2-4</td><td><span id="mg24CasaA"></span></td><td><span id="mg24TrasfertaB"></span></td></tr>
                         <tr><td>Multigol 3-5</td><td><span id="mg35CasaA"></span></td><td><span id="mg35TrasfertaB"></span></td></tr>
@@ -251,7 +242,6 @@
             </section>
         </details>
 
-        <!-- Modulo Analisi Dettagliata -->
         <details class="modulo" id="moduloAnalisiDettagliata">
             <summary>Analisi Dettagliata</summary>
             <section id="analisiDettagliata">
@@ -275,21 +265,29 @@
                         </table>
                     </div>
                     <div class="analisi-container">
-                        <h4>Predizione Esito</h4>
-                        <div id="predizioneEsito"></div>
+                        <h4>Predizione Esito e Spunti</h4>
+                        <div id="predizioneEsito">
+                            <p><strong>Gol Attesi:</strong> <span id="golAttesiOut">N/D</span></p>
+                            <p><strong>Probabilità Stimate 1X2:</strong> <span id="prob1X2Out">N/D</span></p>
+                            <p><strong>Probabilità Stimate Over 2.5 / Gol:</strong> <span id="probOverGolOut">N/D</span></p>
+                            <hr>
+                            <h5>Spunti dall'Analisi Statistica:</h5>
+                            <ul id="spuntiAnalisiList">
+                                <li>Calcolare i risultati per visualizzare gli spunti...</li>
+                            </ul>
+                            <p><small><i>Nota: Questi spunti derivano da calcoli statistici sui dati inseriti e non costituiscono una garanzia di vincita. Gioca responsabilmente.</i></small></p>
+                        </div>
                     </div>
                 </div>
             </section>
         </details>
 
-        <!-- Modulo Partite Salvate -->
         <details class="modulo" id="moduloPartiteSalvati">
             <summary>Partite Salvate</summary>
             <section id="partiteSalvati">
                 <h2>Partite Salvate</h2>
                 <div id="partiteSalvatiBody">
-                    <!-- Riempito dinamicamente con gruppi e sottogruppi -->
-                </div>
+                    </div>
                 <div class="buttons" style="margin-top: 20px;">
                     <button type="button" onclick="esportaPartite()">Esporta Lista</button>
                     <button type="button" onclick="importaPartite()">Importa Lista</button>
@@ -299,7 +297,6 @@
             </section>
         </details>
 
-        <!-- Modulo Storico Giocate -->
         <details class="modulo" id="moduloStoricoGiocate">
             <summary>Storico Giocate</summary>
             <section id="storicoGiocate">
@@ -314,15 +311,13 @@
                         </tr>
                     </thead>
                     <tbody id="storicoGiocateBody">
-                        <!-- Riempito dinamicamente -->
-                    </tbody>
+                        </tbody>
                 </table>
             </section>
         </details>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="script.js"></script>
-    <!-- Script per Service Worker -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
