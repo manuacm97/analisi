@@ -1,476 +1,617 @@
-body {
-    font-family: 'Inter', sans-serif;
-    background-color: #f0f2f5;
+/* ==========================================
+   ANALISI SCOMMESSE - DESIGN APPLE
+   ========================================== */
+
+:root {
+    /* Color Palette - Apple Style */
+    --primary: #007AFF;
+    --primary-dark: #0051D5;
+    --accent: #34C759;
+    --accent-warning: #FF9500;
+    --accent-danger: #FF3B30;
+    --neutral-dark: #3A3A3C;
+    --neutral-medium: #48484A;
+    --bg-main: #F2F2F7;
+    --bg-card: #FFFFFF;
+    --text-primary: #1D1D1F;
+    --text-secondary: #8E8E93;
+    --border-color: #D1D1D6;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.12);
+    
+    /* Spacing */
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 1.5rem;
+    --spacing-lg: 2rem;
+    
+    /* Border Radius - Minimal */
+    --radius: 4px;
+    
+    /* Transitions */
+    --transition: 0.2s ease;
+}
+
+* {
+    box-sizing: border-box;
     margin: 0;
-    padding: 20px;
-    font-size: 14px;
+    padding: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg-main);
+    color: var(--text-primary);
+    font-size: 15px;
+    line-height: 1.5;
+    padding: var(--spacing-lg);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
-    background: white;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    position: relative;
+    background: var(--bg-card);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
 }
 
-#homeButton {
-    display: block;
-    margin: 0 auto 20px;
-    background-color: #2c6e49;
-    color: white;
-    padding: 12px 30px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    position: sticky;
-    top: 10px;
-    z-index: 1000;
-}
-
-#homeButton:hover {
-    background-color: #1a3c34;
-}
+/* ========== TYPOGRAPHY ========== */
 
 h1 {
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 700;
     text-align: center;
-    color: #1a3c34;
-    font-size: 28px;
-    margin-bottom: 30px;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-lg);
+    letter-spacing: -0.5px;
 }
 
 h2 {
-    color: #2c6e49;
-    font-size: 18px;
-    margin-top: 0;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: var(--spacing-md);
 }
 
 h3 {
-    color: #2c6e49;
-    font-size: 16px;
-    margin-top: 30px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-top: var(--spacing-lg);
+    margin-bottom: var(--spacing-sm);
 }
 
 h4 {
-    color: #2c6e49;
-    font-size: 14px;
-    margin-bottom: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--neutral-dark);
+    margin-bottom: var(--spacing-sm);
 }
 
+/* ========== BUTTONS ========== */
+
+#homeButton {
+    display: block;
+    margin: 0 auto var(--spacing-lg);
+    background: var(--primary);
+    color: white;
+    padding: 12px 28px;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 600;
+    position: sticky;
+    top: 10px;
+    z-index: 1000;
+    transition: all var(--transition);
+}
+
+#homeButton:hover {
+    background: var(--primary-dark);
+}
+
+#homeButton:active {
+    transform: scale(0.98);
+}
+
+button {
+    background: var(--primary);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: var(--radius);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 8px;
+    transition: all var(--transition);
+}
+
+button:hover {
+    background: var(--primary-dark);
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+.elimina-btn {
+    background: var(--accent-danger);
+    padding: 8px 16px;
+    font-size: 13px;
+}
+
+.elimina-btn:hover {
+    background: #D70015;
+}
+
+/* ========== INPUTS & FORMS ========== */
+
+input[type="text"],
+input[type="number"],
+select,
+textarea {
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    font-size: 14px;
+    transition: all var(--transition);
+    background: white;
+    color: var(--text-primary);
+    font-family: inherit;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-right: 8px;
+    cursor: pointer;
+    accent-color: var(--primary);
+}
+
+/* ========== TABLES ========== */
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin: var(--spacing-md) 0;
+    table-layout: auto;
+}
+
+/* Wrapper per scroll orizzontale */
+.table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+th {
+    background: var(--neutral-dark);
+    color: white;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px 10px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+td {
+    border: 1px solid var(--border-color);
+    padding: 8px;
+    text-align: center;
+    background: white;
+}
+
+tr:hover td {
+    background: #F9F9F9;
+}
+
+/* ========== LAYOUT SECTIONS ========== */
+
 .nomi-squadre {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    margin-bottom: 30px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-lg);
+    padding: var(--spacing-md);
+    background: var(--bg-main);
+    border-radius: var(--radius);
 }
 
 .nomi-squadre label {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 10px;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 .tabelle-affiancate {
-    display: flex;
-    gap: 20px;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: var(--spacing-md);
+    margin: var(--spacing-md) 0;
 }
 
 .squadra {
-    flex: 1;
+    background: white;
+    padding: var(--spacing-md);
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    overflow-x: auto;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-th, td {
-    border: 1px solid #e0e0e0;
-    padding: 6px;
-    text-align: center;
-    vertical-align: middle; /* Allinea verticalmente il contenuto */
-}
-
-th {
-    background-color: #2c6e49;
-    color: white;
-    font-weight: bold;
-}
-
-select, input[type="text"] {
-    padding: 4px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 12px;
-    box-sizing: border-box; /* Assicura coerenza padding/border */
-}
-
-/* Stile aggiunto per il nuovo select delle partite precedenti */
-#selezionaPartitaPrecedente {
-    padding: 4px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 12px;
-    margin: 0 10px; /* Stesso margine dei bottoni vicini */
-    height: 36px; /* Stessa altezza dei bottoni vicini */
-    vertical-align: middle; /* Allinea verticalmente con i bottoni */
-    cursor: pointer;
-}
+/* ========== ESITI & BADGES ========== */
 
 .esito {
     display: inline-block;
-    width: 25px;
-    padding: 4px;
-    border-radius: 3px;
-    font-weight: bold;
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+    border-radius: var(--radius);
+    font-weight: 700;
+    font-size: 12px;
 }
 
-.esito.vittoria { background-color: #2ecc71; color: white; }
-.esito.pareggio { background-color: #95a5a6; color: white; }
-.esito.sconfitta { background-color: #e74c3c; color: white; }
+.esito.vittoria {
+    background: var(--accent);
+    color: white;
+}
+
+.esito.pareggio {
+    background: var(--neutral-medium);
+    color: white;
+}
+
+.esito.sconfitta {
+    background: var(--accent-danger);
+    color: white;
+}
+
+.esito-select {
+    padding: 6px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    font-size: 13px;
+    background: white;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.esito-select.vincente {
+    background: var(--accent) !important;
+    color: white !important;
+    border-color: var(--accent) !important;
+    font-weight: 700;
+}
+
+.esito-select.perdente {
+    background: var(--accent-danger) !important;
+    color: white !important;
+    border-color: var(--accent-danger) !important;
+    font-weight: 700;
+}
+
+/* ========== PERCENTUALI ========== */
+
+.perc {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: var(--radius);
+    color: white;
+    font-weight: 700;
+    min-width: 50px;
+    text-align: center;
+    font-size: 13px;
+}
+
+.perc-vincente {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: var(--radius);
+    background: var(--accent);
+    color: white;
+    font-weight: 700;
+    margin-left: 12px;
+    font-size: 14px;
+}
+
+.punteggio {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--primary);
+    padding: 6px 12px;
+    display: inline-block;
+}
+
+/* ========== MODULI (DETAILS) ========== */
+
+.modulo {
+    margin: var(--spacing-md) 0;
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.modulo summary {
+    font-weight: 600;
+    font-size: 17px;
+    cursor: pointer;
+    color: white;
+    background: var(--neutral-dark);
+    padding: 16px 20px;
+    user-select: none;
+}
+
+.modulo summary:hover {
+    background: var(--neutral-medium);
+}
+
+.modulo > *:not(summary) {
+    padding: var(--spacing-md);
+}
+
+/* ========== SEZIONI RISULTATI ========== */
+
+#risultati,
+#percentualiEsitiSection,
+#tendenzaCasaTrasferta,
+#analisiDettagliata,
+#partiteSalvati,
+#storicoGiocate {
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+}
+
+.tabelle-risultati {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: var(--spacing-md);
+}
+
+/* ========== ANALISI DETTAGLIATA ========== */
+
+.analisi-container {
+    margin-bottom: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--bg-main);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+}
+
+.confidence-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: var(--radius);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 10px;
+}
+
+.confidence-high {
+    background: var(--accent);
+    color: white;
+}
+
+.confidence-medium {
+    background: var(--accent-warning);
+    color: white;
+}
+
+.confidence-low {
+    background: var(--accent-danger);
+    color: white;
+}
+
+.highlight {
+    font-weight: 700;
+    color: var(--primary);
+    background: rgba(0, 122, 255, 0.1);
+    padding: 2px 6px;
+    border-radius: var(--radius);
+}
+
+#confrontoForma p,
+#predizioneEsito p {
+    margin: 10px 0;
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+#predizioneEsito ul {
+    list-style: none;
+    padding: 0;
+    margin: var(--spacing-md) 0;
+}
+
+#predizioneEsito li {
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    background: var(--bg-main);
+    border-left: 3px solid var(--primary);
+    border-radius: var(--radius);
+}
+
+/* ========== PARAMETRI ========== */
 
 .parametri {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 15px;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-md);
+    background: var(--bg-main);
+    border-radius: var(--radius);
 }
 
 .parametri label {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
-input[type="number"] {
-    width: 50px;
-    padding: 4px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 12px;
-    box-sizing: border-box;
-}
+/* ========== BUTTONS LAYOUT ========== */
 
 .buttons {
     text-align: center;
-    margin-top: 20px;
-}
-
-button {
-    background-color: #2c6e49;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 14px;
-    margin: 0 10px;
-    vertical-align: middle; /* Allinea con altri elementi inline */
-}
-
-button:hover {
-    background-color: #1a3c34;
-}
-
-.modulo {
-    margin-top: 20px;
-}
-
-.modulo summary {
-    font-weight: bold;
-    cursor: pointer;
-    color: #2c6e49;
-    font-size: 18px;
-    padding: 10px;
-    background-color: #e6f0ea;
-    border-radius: 5px;
-}
-
-#risultati, #percentualiEsitiSection, #tendenzaCasaTrasferta, #analisiDettagliata, #partiteSalvati, #storicoGiocate {
-    margin-top: 20px;
-    padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-}
-
-.tabelle-risultati {
+    margin-top: var(--spacing-md);
     display: flex;
-    gap: 20px;
-    justify-content: space-between;
-}
-
-#risultatiSquadraA, #risultatiSquadraB, #percentualiEsiti, #tendenzaCasaTrasfertaTable, #storicoGiocateTable, #statisticheChiave {
-    width: 100%;
-    background-color: #fff;
-    border: 2px solid #2c6e49;
-    border-radius: 10px;
-}
-
-#risultatiSquadraA th, #risultatiSquadraB th, #percentualiEsiti th, #tendenzaCasaTrasfertaTable th, #storicoGiocateTable th, #statisticheChiave th {
-    background-color: #2c6e49;
-    padding: 8px;
-}
-
-#risultatiSquadraA td, #risultatiSquadraB td, #percentualiEsiti td, #tendenzaCasaTrasfertaTable td, #storicoGiocateTable td, #statisticheChiave td {
-    padding: 6px;
-}
-
-.sequenza-cell {
-    padding: 6px;
-    vertical-align: middle;
-}
-
-#sequenzaA, #sequenzaB {
-    display: flex;
-    gap: 5px;
+    flex-wrap: wrap;
     justify-content: center;
-}
-
-
-.perc {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 5px;
-    color: white;
-    font-weight: bold;
-    min-width: 45px;
-    text-align: center;
-}
-
-.punteggio {
-    font-size: 18px;
-    font-weight: bold;
-    color: #2c6e49;
-    background-color: #e6f0ea;
-    padding: 4px 8px;
-    border-radius: 5px;
+    gap: 10px;
 }
 
 .squadra-buttons {
-    margin-top: 5px;
+    margin-top: 10px;
     display: flex;
-    gap: 5px;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
 .squadra-buttons button {
-    padding: 5px 10px;
-    font-size: 12px;
+    padding: 8px 16px;
+    font-size: 13px;
+    margin: 0;
 }
 
-.elimina-btn {
-    background-color: #e74c3c;
-    padding: 5px 10px;
-    font-size: 12px;
-}
-
-.elimina-btn:hover {
-    background-color: #c0392b;
-}
-
-.esito-select {
-     padding: 3px;
-     border: 1px solid #ccc;
-     border-radius: 5px;
-     font-size: 12px;
-     background-color: #fff;
-     color: #333;
-     cursor: pointer;
-}
-.esito-select.vincente {
-    background-color: #2ecc71 !important;
-    color: white !important;
-    font-weight: bold;
-}
-.esito-select.perdente {
-    background-color: #e74c3c !important;
-    color: white !important;
-     font-weight: bold;
-}
+/* ========== GENERATORE ========== */
 
 .generatore {
-    margin-bottom: 20px;
+    margin-bottom: var(--spacing-md);
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    overflow: hidden;
 }
 
 .generatore summary {
-    font-weight: bold;
+    font-weight: 600;
     cursor: pointer;
-    color: #2c6e49;
+    color: var(--text-primary);
+    background: var(--bg-main);
+    padding: 14px 18px;
+}
+
+.generatore summary:hover {
+    background: #E5E5EA;
 }
 
 .generatore-form {
-    margin-top: 10px;
-}
-
-.generatore-form label {
-    display: block;
-    margin-bottom: 5px;
+    padding: var(--spacing-md);
 }
 
 .generatore-form textarea {
     width: 100%;
-    padding: 8px;
-    font-size: 12px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    min-height: 180px;
+    padding: 12px;
+    font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+    font-size: 13px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
     resize: vertical;
-    box-sizing: border-box;
 }
 
-/* Stili aggiuntivi per le nuove funzionalità */
-input[type="checkbox"] {
-    margin-right: 5px;
-    vertical-align: middle;
+/* ========== GRUPPI E SOTTOGRUPPI ========== */
+
+.gruppo-partite {
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
 }
 
-.checkbox-wrapper {
-    margin-bottom: 15px;
-    text-align: left;
-}
-
-.checkbox-wrapper label {
-    display: inline-flex;
+.gruppo-partite h3 {
+    display: flex;
     align-items: center;
-    cursor: pointer;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
-/* Stili per la tabella Partite Salvate */
-.perc-vincente {
-    display: inline-block;
-    padding: 4px 8px;
-    border-radius: 5px;
-    color: white;
-    font-weight: bold;
-    background-color: #2c6e49;
-    margin-left: 10px;
-    font-size: 0.9em;
-    vertical-align: middle;
+.sottogruppo-partite {
+    margin: var(--spacing-md) 0 var(--spacing-md) var(--spacing-md);
+    padding: var(--spacing-md);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    background: var(--bg-main);
+    overflow-x: auto;
 }
 
-.gioco-input, .gruppo-input { /* Input per giocata/risultato/gruppo in tabella */
-    width: 80px; /* Larghezza base per input */
-    padding: 4px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 12px;
-    box-sizing: border-box;
+.sottogruppo-partite h4 {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* ========== INPUT SPECIALI ========== */
+
+.gioco-input,
+.gruppo-input {
+    width: 100px;
+    padding: 6px;
     text-align: center;
 }
+
 .gruppo-input {
-    width: 100px; /* Leggermente più largo per nomi gruppo */
+    width: 120px;
 }
 
 .schedina-select {
-     width: 50px;
-     padding: 3px;
-     border: 1px solid #ccc;
-     border-radius: 5px;
-     font-size: 12px;
-     cursor: pointer;
+    width: 60px;
+    padding: 6px;
 }
 
-
-.gruppo-partite {
-     margin-bottom: 20px;
-     border-bottom: 1px solid #eee;
-     padding-bottom: 10px;
-}
-.gruppo-partite h3 {
-     display: flex;
-     align-items: center;
-     flex-wrap: wrap;
-     gap: 10px;
+#selezionaPartitaPrecedente {
+    padding: 10px 14px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    font-size: 14px;
+    margin: 0 10px;
+    cursor: pointer;
+    background: white;
 }
 
+/* ========== STORICO GIOCATE ========== */
 
-.sottogruppo-partite {
-    margin-left: 20px;
-    margin-top: 10px;
-    border: 1px solid #f0f0f0;
-    padding: 10px;
-    border-radius: 5px;
-    background-color: #fdfdfd;
-}
-.sottogruppo-partite h4 {
-     display: flex;
-     align-items: center;
-     flex-wrap: wrap;
-     gap: 10px;
-}
-.sottogruppo-partite table {
-     margin-top: 10px;
-     border: none;
-     border-radius: 0;
-     background-color: transparent;
-}
-.sottogruppo-partite th, .sottogruppo-partite td {
-     border: 1px solid #e8e8e8;
-}
-
-
-/* Stili per Analisi Dettagliata */
-.analisi-container {
-    margin-bottom: 20px;
-    padding: 15px;
-    background-color: #fff;
-    border: 2px solid #2c6e49;
-    border-radius: 10px;
-}
-
-#confrontoForma, #predizioneEsito {
-    padding: 10px;
-}
-
-#confrontoForma p, #predizioneEsito p {
-    margin: 8px 0;
-    color: #1a3c34;
-    line-height: 1.4;
-}
-#predizioneEsito h5 {
-     margin-top: 15px;
-     margin-bottom: 8px;
-     color: #1a3c34;
-}
-#predizioneEsito ul {
-     list-style: disc;
-     margin-left: 20px;
-     padding-left: 0;
-}
-#predizioneEsito li {
-     margin-bottom: 6px;
-     color: #333;
-}
-#predizioneEsito small {
-     display: block;
-     margin-top: 15px;
-     color: #777;
-     font-style: italic;
-}
-
-
-.highlight {
-    font-weight: bold;
-    color: #2c6e49;
-    background-color: #e6f0ea;
-    padding: 2px 6px;
-    border-radius: 3px;
-}
-
-/* Stili per Storico Giocate */
 .sortable {
     cursor: pointer;
     position: relative;
+    user-select: none;
+}
+
+.sortable:hover {
+    opacity: 0.8;
 }
 
 .sort-arrow {
     display: inline-block;
     width: 0;
     height: 0;
-    margin-left: 5px;
+    margin-left: 6px;
     vertical-align: middle;
     border-left: 4px solid transparent;
     border-right: 4px solid transparent;
@@ -484,64 +625,138 @@ input[type="checkbox"] {
     border-top: 6px solid white;
 }
 
-/* Media Queries per Mobile */
+/* ========== SEQUENZE ========== */
+
+.sequenza-cell {
+    padding: 8px;
+}
+
+#sequenzaA,
+#sequenzaB {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* ========== RESPONSIVE DESIGN ========== */
+
+@media (max-width: 1024px) {
+    .tabelle-affiancate {
+        grid-template-columns: 1fr;
+    }
+    
+    .tabelle-risultati {
+        grid-template-columns: 1fr;
+    }
+}
+
 @media (max-width: 768px) {
-    body { padding: 10px; }
-    .container { padding: 15px; }
-    #homeButton { padding: 10px 20px; font-size: 14px; top: 5px; }
-    h1 { font-size: 24px; }
-    h2 { font-size: 16px; }
-    h3 { font-size: 14px; }
-    h4 { font-size: 12px; }
-    .nomi-squadre { flex-direction: column; align-items: center; gap: 10px; }
-    .tabelle-affiancate { flex-direction: column; }
-    .tabelle-risultati { flex-direction: column; }
-    table { font-size: 12px; }
-    th, td { padding: 4px; }
-    select, input[type="text"], input[type="number"] {
-        width: 100%;
-        padding: 3px;
-        font-size: 12px;
-        box-sizing: border-box;
+    body {
+        padding: var(--spacing-sm);
     }
-    #selezionaPartitaPrecedente {
-        width: auto; max-width: 200px; height: auto; padding: 3px; font-size: 12px;
+    
+    .container {
+        padding: var(--spacing-md);
     }
-    .esito { width: 20px; padding: 2px; }
-    .parametri { flex-direction: column; align-items: flex-start; }
-    .buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; align-items: center; }
-    button { padding: 8px 15px; font-size: 12px; margin: 0; }
-    .punteggio { font-size: 16px; }
-    #risultati, #percentualiEsitiSection, #tendenzaCasaTrasferta, #analisiDettagliata, #partiteSalvati, #storicoGiocate { margin-top: 10px; padding: 15px; }
-    .squadra-buttons { flex-direction: column; }
-    .elimina-btn { padding: 4px 8px; font-size: 10px; }
-    .gioco-input, .gruppo-input { width: 60px; } /* Adatta input tabella */
-    .gruppo-input { width: 80px; }
-    .schedina-select { width: 45px; }
-    .sottogruppo-partite { margin-left: 10px; }
-    .sottogruppo-partite table { font-size: 11px; } /* Riduci leggermente font tabelle interne */
-    .modulo summary { font-size: 16px; padding: 8px; }
-    .analisi-container { padding: 10px; }
-    .perc-vincente { margin-left: 5px; font-size: 10px; padding: 3px 6px;}
-    #predizioneEsito ul { margin-left: 15px; }
+    
+    h1 {
+        font-size: 26px;
+        margin-bottom: var(--spacing-md);
+    }
+    
+    h2 {
+        font-size: 20px;
+    }
+    
+    .nomi-squadre {
+        grid-template-columns: 1fr;
+    }
+    
+    .tabelle-affiancate {
+        grid-template-columns: 1fr;
+    }
+    
+    table {
+        font-size: 13px;
+    }
+    
+    th,
+    td {
+        padding: 6px 4px;
+    }
+    
+    .buttons {
+        gap: 8px;
+    }
+    
+    button {
+        padding: 10px 16px;
+        font-size: 13px;
+        margin: 0;
+    }
+    
+    .esito {
+        width: 26px;
+        height: 26px;
+        line-height: 26px;
+        font-size: 11px;
+    }
+    
+    .parametri {
+        flex-direction: column;
+    }
 }
 
 @media (max-width: 480px) {
-    table { font-size: 10px; }
-    th, td { padding: 3px; }
-    select, input[type="text"], input[type="number"] { font-size: 10px; }
-     #selezionaPartitaPrecedente { font-size: 10px; max-width: 150px; }
-    button { padding: 6px 12px; font-size: 10px; }
-    .gioco-input, .gruppo-input { width: 50px; }
-    .gruppo-input { width: 70px; }
-    .schedina-select { width: 40px; }
-    #homeButton { padding: 8px 15px; font-size: 12px; }
-    .modulo summary { font-size: 14px; padding: 6px; }
-    .punteggio { font-size: 14px; }
-    .analisi-container { padding: 8px; }
-    .perc-vincente { margin-left: 5px; font-size: 9px; padding: 2px 4px; }
-    #predizioneEsito ul { margin-left: 10px; }
-    #predizioneEsito li { font-size: 11px; }
-    .sottogruppo-partite table { font-size: 9px; } /* Riduci ancora font tabelle interne */
-    .sottogruppo-partite th, .sottogruppo-partite td { padding: 2px; }
+    .container {
+        padding: var(--spacing-sm);
+    }
+    
+    h1 {
+        font-size: 22px;
+    }
+    
+    table {
+        font-size: 11px;
+    }
+    
+    th,
+    td {
+        padding: 4px 2px;
+    }
+    
+    button {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+    
+    .gioco-input,
+    .gruppo-input {
+        width: 80px;
+        font-size: 12px;
+    }
+    
+    .schedina-select {
+        width: 50px;
+    }
+    
+    .modulo summary {
+        font-size: 15px;
+        padding: 12px 14px;
+    }
 }
+
+/* ========== UTILITIES ========== */
+
+.text-center {
+    text-align: center;
+}
+
+.mt-1 { margin-top: var(--spacing-sm); }
+.mt-2 { margin-top: var(--spacing-md); }
+.mt-3 { margin-top: var(--spacing-lg); }
+
+.mb-1 { margin-bottom: var(--spacing-sm); }
+.mb-2 { margin-bottom: var(--spacing-md); }
+.mb-3 { margin-bottom: var(--spacing-lg); }

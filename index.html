@@ -3,19 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analisi Scommesse</title>
+    <title>Analisi Scommesse - Algoritmo Avanzato</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
-
-    <link rel="icon" href="/icons/favicon.ico" sizes="any"> <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png"> <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png"> <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png"> <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg"> <link rel="manifest" href="/manifest.json"> <meta name="theme-color" content="#2c6e49">
+    
+    <link rel="icon" href="/icons/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2d6a4f">
 </head>
 <body>
     <div class="container">
-        <button id="homeButton" onclick="chiudiTuttiModuli()">Home</button>
-        <h1>Analisi Scommesse Sportive</h1>
+        <button id="homeButton" onclick="chiudiTuttiModuli()">🏠 Home</button>
+        <h1>⚽ Analisi Scommesse Sportive</h1>
 
         <details class="modulo" id="moduloInserimentoDati" open>
-            <summary>Inserimento Dati</summary>
+            <summary>📋 Inserimento Dati</summary>
             <form id="formAnalisi">
                 <div class="nomi-squadre">
                     <div>
@@ -35,12 +40,15 @@
                 </div>
 
                 <details class="generatore">
-                    <summary>Generatore</summary>
+                    <summary>⚡ Generatore Rapido (copia da sito)</summary>
                     <div class="generatore-form">
-                        <label>Inserisci Dati Squadra (testo):</label>
-                        <textarea id="textInput" rows="10" placeholder="Esempio: (7 righe per partita)&#10;09/03/2025&#10;SA&#10;Empoli&#10;Roma&#10;0&#10;1&#10;S&#10;06/03/2025&#10;EL&#10;Roma&#10;Ath. Bilbao&#10;2&#10;1&#10;V"></textarea>
+                        <label>Inserisci Dati Squadra (testo - 7 righe per partita):</label>
+                        <textarea id="textInput" rows="10" placeholder="Esempio:&#10;09/03/2025&#10;SA&#10;Empoli&#10;Roma&#10;0&#10;1&#10;S&#10;06/03/2025&#10;EL&#10;Roma&#10;Ath. Bilbao&#10;2&#10;1&#10;V"></textarea>
                         <button type="button" onclick="generaFileDaTesto()">Genera File</button>
-                         </div>
+                        <p style="margin-top: 10px; font-size: 13px; color: #6c757d;">
+                            💡 <strong>Workflow:</strong> Copia dati dal sito → Genera File → Importa File → <strong>POI</strong> compila le posizioni avversari nella tabella sotto
+                        </p>
+                    </div>
                 </details>
 
                 <div class="tabelle-affiancate">
@@ -54,15 +62,58 @@
                                     <th>Gol Subiti</th>
                                     <th>Esito</th>
                                     <th>C/T</th>
+                                    <th style="width: 70px;">Pos. Avv.<br><small>(opz.)</small></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr><td><input type="text" name="avversarioA1"></td><td><select name="golFattiA1"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><select name="golSubitiA1"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><span class="esito"></span></td><td><select name="casaTrasfertaA1"><option value="C">C</option><option value="T">T</option></select></td></tr>
-                                <tr><td><input type="text" name="avversarioA2"></td><td><select name="golFattiA2"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><select name="golSubitiA2"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><span class="esito"></span></td><td><select name="casaTrasfertaA2"><option value="C">C</option><option value="T">T</option></select></td></tr>
-                                <tr><td><input type="text" name="avversarioA3"></td><td><select name="golFattiA3"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><select name="golSubitiA3"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><span class="esito"></span></td><td><select name="casaTrasfertaA3"><option value="C">C</option><option value="T">T</option></select></td></tr>
-                                <tr><td><input type="text" name="avversarioA4"></td><td><select name="golFattiA4"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><select name="golSubitiA4"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><span class="esito"></span></td><td><select name="casaTrasfertaA4"><option value="C">C</option><option value="T">T</option></select></td></tr>
-                                <tr><td><input type="text" name="avversarioA5"></td><td><select name="golFattiA5"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><select name="golSubitiA5"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><span class="esito"></span></td><td><select name="casaTrasfertaA5"><option value="C">C</option><option value="T">T</option></select></td></tr>
-                                <tr><td><input type="text" name="avversarioA6"></td><td><select name="golFattiA6"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><select name="golSubitiA6"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><span class="esito"></span></td><td><select name="casaTrasfertaA6"><option value="C">C</option><option value="T">T</option></select></td></tr>
+                                <tr>
+                                    <td><input type="text" name="avversarioA1"></td>
+                                    <td><select name="golFattiA1"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiA1"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaA1"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvA1" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" name="avversarioA2"></td>
+                                    <td><select name="golFattiA2"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiA2"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaA2"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvA2" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" name="avversarioA3"></td>
+                                    <td><select name="golFattiA3"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiA3"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaA3"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvA3" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" name="avversarioA4"></td>
+                                    <td><select name="golFattiA4"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiA4"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaA4"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvA4" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" name="avversarioA5"></td>
+                                    <td><select name="golFattiA5"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiA5"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaA5"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvA5" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" name="avversarioA6"></td>
+                                    <td><select name="golFattiA6"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiA6"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaA6"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvA6" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
                             </tbody>
                         </table>
                         <div class="parametri">
@@ -82,15 +133,58 @@
                                     <th>Gol Subiti</th>
                                     <th>Esito</th>
                                     <th>C/T</th>
+                                    <th style="width: 70px;">Pos. Avv.<br><small>(opz.)</small></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr><td><input type="text" name="avversarioB1"></td><td><select name="golFattiB1"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><select name="golSubitiB1"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><span class="esito"></span></td><td><select name="casaTrasfertaB1"><option value="C">C</option><option value="T">T</option></select></td></tr>
-                                <tr><td><input type="text" name="avversarioB2"></td><td><select name="golFattiB2"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><select name="golSubitiB2"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><span class="esito"></span></td><td><select name="casaTrasfertaB2"><option value="C">C</option><option value="T">T</option></select></td></tr>
-                                <tr><td><input type="text" name="avversarioB3"></td><td><select name="golFattiB3"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><select name="golSubitiB3"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><span class="esito"></span></td><td><select name="casaTrasfertaB3"><option value="C">C</option><option value="T">T</option></select></td></tr>
-                                <tr><td><input type="text" name="avversarioB4"></td><td><select name="golFattiB4"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><select name="golSubitiB4"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><span class="esito"></span></td><td><select name="casaTrasfertaB4"><option value="C">C</option><option value="T">T</option></select></td></tr>
-                                <tr><td><input type="text" name="avversarioB5"></td><td><select name="golFattiB5"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><select name="golSubitiB5"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><span class="esito"></span></td><td><select name="casaTrasfertaB5"><option value="C">C</option><option value="T">T</option></select></td></tr>
-                                <tr><td><input type="text" name="avversarioB6"></td><td><select name="golFattiB6"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><select name="golSubitiB6"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td><td><span class="esito"></span></td><td><select name="casaTrasfertaB6"><option value="C">C</option><option value="T">T</option></select></td></tr>
+                                <tr>
+                                    <td><input type="text" name="avversarioB1"></td>
+                                    <td><select name="golFattiB1"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiB1"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaB1"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvB1" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" name="avversarioB2"></td>
+                                    <td><select name="golFattiB2"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiB2"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaB2"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvB2" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" name="avversarioB3"></td>
+                                    <td><select name="golFattiB3"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiB3"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaB3"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvB3" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" name="avversarioB4"></td>
+                                    <td><select name="golFattiB4"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiB4"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaB4"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvB4" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" name="avversarioB5"></td>
+                                    <td><select name="golFattiB5"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiB5"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaB5"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvB5" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" name="avversarioB6"></td>
+                                    <td><select name="golFattiB6"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiB6"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaB6"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvB6" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
                             </tbody>
                         </table>
                         <div class="parametri">
@@ -102,79 +196,40 @@
                 </div>
 
                 <div class="buttons">
-                    <button type="button" onclick="calcolaRisultati()">Calcola Risultati</button>
-                    <button type="button" onclick="cancellaDati()">Cancella Dati</button>
                     <select id="selezionaPartitaPrecedente">
-                        <option value="" disabled selected>Carica Partita Precedente</option>
-                        </select>
-                    <button type="button" onclick="salvaPartita()">Salva Partita</button>
+                        <option value="">-- Seleziona Partita Precedente --</option>
+                    </select>
+                    <button type="button" onclick="calcolaRisultati()">🧮 Calcola Risultati</button>
+                    <button type="button" onclick="salvaPartita()">💾 Salva Partita</button>
+                    <button type="button" onclick="pulisciCampi()" style="background: #FF9500;">🧹 Pulisci Campi</button>
                 </div>
             </form>
         </details>
 
         <details class="modulo" id="moduloRisultati">
-            <summary>Risultati</summary>
+            <summary>📊 Risultati Analisi</summary>
             <section id="risultati">
-                <h2>Risultati</h2>
-                <div class="checkbox-wrapper">
-                     <label><input type="checkbox" id="mostraPunteggioCoppe" onchange="togglePunteggioCoppe()"> Mostra Punteggio Coppe</label>
-                </div>
+                <h2>Risultati Analisi</h2>
                 <div class="tabelle-risultati">
                     <table id="risultatiSquadraA">
                         <thead>
-                            <tr><th colspan="2" id="nomeRisultatiA">Squadra A</th></tr>
-                            <tr><td colspan="2" class="sequenza-cell"><div id="sequenzaA"></div></td></tr>
+                            <tr>
+                                <th colspan="2" id="nomeRisultatiA">Squadra A</th>
+                            </tr>
                         </thead>
                         <tbody>
-                            <tr><td>Gol Fatti (Complessivo)</td><td><span id="golFattiA"></span></td></tr>
-                            <tr><td>Gol Subiti (Complessivo)</td><td><span id="golSubitiA"></span></td></tr>
-                            <tr><td>% Vittorie (Complessivo)</td><td><span id="vittorieA"></span></td></tr>
-                            <tr><td>% Pareggi (Complessivo)</td><td><span id="pareggiA"></span></td></tr>
-                            <tr><td>% Sconfitte (Complessivo)</td><td><span id="sconfitteA"></span></td></tr>
-                            <tr><td>Gol Fatti (Casa)</td><td><span id="golFattiCasaA"></span></td></tr>
-                            <tr><td>Gol Subiti (Casa)</td><td><span id="golSubitiCasaA"></span></td></tr>
-                            <tr><td>% Vittorie (Casa)</td><td><span id="vittorieCasaA"></span></td></tr>
-                            <tr><td>% Pareggi (Casa)</td><td><span id="pareggiCasaA"></span></td></tr>
-                            <tr><td>% Sconfitte (Casa)</td><td><span id="sconfitteCasaA"></span></td></tr>
-                            <tr><td>Gol Fatti (Trasferta)</td><td><span id="golFattiTrasfertaA"></span></td></tr>
-                            <tr><td>Gol Subiti (Trasferta)</td><td><span id="golSubitiTrasfertaA"></span></td></tr>
-                            <tr><td>% Vittorie (Trasferta)</td><td><span id="vittorieTrasfertaA"></span></td></tr>
-                            <tr><td>% Pareggi (Trasferta)</td><td><span id="pareggiTrasfertaA"></span></td></tr>
-                            <tr><td>% Sconfitte (Trasferta)</td><td><span id="sconfitteTrasfertaA"></span></td></tr>
-                            <tr><td>Peso Posizione</td><td><span id="pesoPosizioneA"></span></td></tr>
-                            <tr><td>Forma Recente</td><td><span id="formaA"></span></td></tr>
-                            <tr><td>Punteggio Generale</td><td><span id="punteggioA"></span></td></tr>
-                            <tr><td>Punteggio Casa/Trasferta</td><td><span id="punteggioCasaA"></span></td></tr>
-                            <tr class="punteggio-coppe" style="display: none;"><td>Punteggio Coppe</td><td><span id="punteggioCoppeA"></span></td></tr>
-                            <tr><td>Punteggio Totale</td><td><span id="punteggioTotaleA"></span></td></tr>
+                            <!-- Popolato da JS -->
                         </tbody>
                     </table>
+                    
                     <table id="risultatiSquadraB">
                         <thead>
-                            <tr><th colspan="2" id="nomeRisultatiB">Squadra B</th></tr>
-                            <tr><td colspan="2" class="sequenza-cell"><div id="sequenzaB"></div></td></tr>
+                            <tr>
+                                <th colspan="2" id="nomeRisultatiB">Squadra B</th>
+                            </tr>
                         </thead>
                         <tbody>
-                            <tr><td>Gol Fatti (Complessivo)</td><td><span id="golFattiB"></span></td></tr>
-                            <tr><td>Gol Subiti (Complessivo)</td><td><span id="golSubitiB"></span></td></tr>
-                            <tr><td>% Vittorie (Complessivo)</td><td><span id="vittorieB"></span></td></tr>
-                            <tr><td>% Pareggi (Complessivo)</td><td><span id="pareggiB"></span></td></tr>
-                            <tr><td>% Sconfitte (Complessivo)</td><td><span id="sconfitteB"></span></td></tr>
-                            <tr><td>Gol Fatti (Casa)</td><td><span id="golFattiCasaB"></span></td></tr>
-                            <tr><td>Gol Subiti (Casa)</td><td><span id="golSubitiCasaB"></span></td></tr>
-                            <tr><td>% Vittorie (Casa)</td><td><span id="vittorieCasaB"></span></td></tr>
-                            <tr><td>% Pareggi (Casa)</td><td><span id="pareggiCasaB"></span></td></tr>
-                            <tr><td>% Sconfitte (Casa)</td><td><span id="sconfitteCasaB"></span></td></tr>
-                            <tr><td>Gol Fatti (Trasferta)</td><td><span id="golFattiTrasfertaB"></span></td></tr>
-                            <tr><td>Gol Subiti (Trasferta)</td><td><span id="golSubitiTrasfertaB"></span></td></tr>
-                            <tr><td>% Vittorie (Trasferta)</td><td><span id="vittorieTrasfertaB"></span></td></tr>
-                            <tr><td>% Pareggi (Trasferta)</td><td><span id="pareggiTrasfertaB"></span></td></tr>
-                            <tr><td>% Sconfitte (Trasferta)</td><td><span id="sconfitteTrasfertaB"></span></td></tr>
-                            <tr><td>Peso Posizione</td><td><span id="pesoPosizioneB"></span></td></tr>
-                            <tr><td>Forma Recente</td><td><span id="formaB"></span></td></tr>
-                            <tr><td>Punteggio Generale</td><td><span id="punteggioB"></span></td></tr>
-                            <tr><td>Punteggio Casa/Trasferta</td><td><span id="punteggioCasaB"></span></td> <tr class="punteggio-coppe" style="display: none;"><td>Punteggio Coppe</td><td><span id="punteggioCoppeB"></span></td></tr>
-                            <tr><td>Punteggio Totale</td><td><span id="punteggioTotaleB"></span></td></tr>
+                            <!-- Popolato da JS -->
                         </tbody>
                     </table>
                 </div>
@@ -182,100 +237,86 @@
         </details>
 
         <details class="modulo" id="moduloPercentualiEsiti">
-            <summary>Percentuali Esiti</summary>
+            <summary>📈 Percentuali Esiti</summary>
             <section id="percentualiEsitiSection">
-                <h3>Percentuali Esiti</h3>
+                <h2>Percentuali Esiti</h2>
                 <table id="percentualiEsiti">
                     <thead>
                         <tr>
-                            <th>Esito</th>
-                            <th id="colonnaSquadraA">Squadra A</th>
-                            <th id="colonnaSquadraB">Squadra B</th>
-                            <th>Totale (12 partite)</th>
+                            <th style="text-align: left;">Esito</th>
+                            <th>Squadra A</th>
+                            <th>Squadra B</th>
+                            <th>Totale</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td>Gol</td><td><span id="golA"></span></td><td><span id="golB"></span></td><td><span id="golTot"></span></td></tr>
-                        <tr><td>NoGol</td><td><span id="nogolA"></span></td><td><span id="nogolB"></span></td><td><span id="nogolTot"></span></td></tr>
-                        <tr><td>Clean Sheet</td><td><span id="cleanSheetA"></span></td><td><span id="cleanSheetB"></span></td><td><span id="cleanSheetTot"></span></td></tr>
-                        <tr><td>Over 0.5 (Squadra)</td><td><span id="over05A"></span></td><td><span id="over05B"></span></td><td><span id="over05Tot"></span></td></tr>
-                        <tr><td>Over 1.5 (Totali)</td><td><span id="over15A"></span></td><td><span id="over15B"></span></td><td><span id="over15Tot"></span></td></tr>
-                        <tr><td>Over 2.5 (Totali)</td><td><span id="over25A"></span></td><td><span id="over25B"></span></td><td><span id="over25Tot"></span></td></tr>
-                        <tr><td>Under 2.5 (Totali)</td><td><span id="under25A"></span></td><td><span id="under25B"></span></td><td><span id="under25Tot"></span></td></tr>
-                        <tr><td>Over 3.5 (Totali)</td><td><span id="over35A"></span></td><td><span id="over35B"></span></td><td><span id="over35Tot"></span></td></tr>
-                        <tr><td>Under 3.5 (Totali)</td><td><span id="under35A"></span></td><td><span id="under35B"></span></td><td><span id="under35Tot"></span></td></tr>
-                        <tr><td>Multigol 1-3</td><td><span id="mg13A"></span></td><td><span id="mg13B"></span></td><td><span id="mg13Tot"></span></td></tr>
-                        <tr><td>Multigol 2-4</td><td><span id="mg24A"></span></td><td><span id="mg24B"></span></td><td><span id="mg24Tot"></span></td></tr>
-                        <tr><td>Multigol 3-5</td><td><span id="mg35A"></span></td><td><span id="mg35B"></span></td><td><span id="mg35Tot"></span></td></tr>
+                        <!-- Popolato da JS -->
                     </tbody>
                 </table>
             </section>
         </details>
 
         <details class="modulo" id="moduloTendenzaCasaTrasferta">
-            <summary>Tendenza Casa/Trasferta</summary>
+            <summary>🏟️ Tendenza Casa/Trasferta</summary>
             <section id="tendenzaCasaTrasferta">
-                <h3>Tendenza Casa/Trasferta</h3>
+                <h2>Tendenza Casa/Trasferta</h2>
                 <table id="tendenzaCasaTrasfertaTable">
                     <thead>
                         <tr>
-                            <th>Esito</th>
                             <th id="casaSquadraA">Squadra A (Casa)</th>
+                            <th>Statistica</th>
                             <th id="trasfertaSquadraB">Squadra B (Trasferta)</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td>Gol</td><td><span id="golCasaA"></span></td><td><span id="golTrasfertaB"></span></td></tr>
-                        <tr><td>NoGol</td><td><span id="nogolCasaA"></span></td><td><span id="nogolTrasfertaB"></span></td></tr>
-                        <tr><td>Clean Sheet</td><td><span id="cleanSheetCasaA"></span></td><td><span id="cleanSheetTrasfertaB"></span></td></tr>
-                        <tr><td>Over 0.5 (Squadra)</td><td><span id="over05CasaA"></span></td><td><span id="over05TrasfertaB"></span></td></tr>
-                        <tr><td>Over 1.5 (Totali)</td><td><span id="over15CasaA"></span></td><td><span id="over15TrasfertaB"></span></td></tr>
-                        <tr><td>Over 2.5 (Totali)</td><td><span id="over25CasaA"></span></td><td><span id="over25TrasfertaB"></span></td></tr>
-                        <tr><td>Under 2.5 (Totali)</td><td><span id="under25CasaA"></span></td><td><span id="under25TrasfertaB"></span></td></tr>
-                        <tr><td>Over 3.5 (Totali)</td><td><span id="over35CasaA"></span></td><td><span id="over35TrasfertaB"></span></td></tr>
-                        <tr><td>Under 3.5 (Totali)</td><td><span id="under35CasaA"></span></td><td><span id="under35TrasfertaB"></span></td></tr>
-                        <tr><td>Multigol 1-3</td><td><span id="mg13CasaA"></span></td><td><span id="mg13TrasfertaB"></span></td></tr>
-                        <tr><td>Multigol 2-4</td><td><span id="mg24CasaA"></span></td><td><span id="mg24TrasfertaB"></span></td></tr>
-                        <tr><td>Multigol 3-5</td><td><span id="mg35CasaA"></span></td><td><span id="mg35TrasfertaB"></span></td></tr>
+                        <!-- Popolato da JS -->
                     </tbody>
                 </table>
             </section>
         </details>
 
         <details class="modulo" id="moduloAnalisiDettagliata">
-            <summary>Analisi Dettagliata</summary>
+            <summary>🎯 Analisi Dettagliata & Predizioni</summary>
             <section id="analisiDettagliata">
                 <h3>Analisi Dettagliata</h3>
                 <div id="analisiDettagliataBody">
                     <div class="analisi-container">
-                        <h4>Confronto Forma</h4>
-                        <div id="confrontoForma"></div>
+                        <h4>💪 Confronto Forma</h4>
+                        <div id="confrontoForma">
+                            <p>Calcola i risultati per visualizzare il confronto...</p>
+                        </div>
                     </div>
+                    
                     <div class="analisi-container">
-                        <h4>Statistiche Chiave</h4>
+                        <h4>📊 Statistiche Chiave</h4>
                         <table id="statisticheChiave">
                             <thead>
                                 <tr>
                                     <th>Statistica</th>
-                                    <th id="nomeStatA">Squadra A</th>
-                                    <th id="nomeStatB">Squadra B</th>
+                                    <th id="nomeStatA" style="min-width: 100px;">Squadra A</th>
+                                    <th id="nomeStatB" style="min-width: 100px;">Squadra B</th>
                                 </tr>
                             </thead>
-                            <tbody></tbody>
+                            <tbody>
+                                <!-- Popolato da JS -->
+                            </tbody>
                         </table>
                     </div>
+                    
                     <div class="analisi-container">
-                        <h4>Predizione Esito e Spunti</h4>
+                        <h4>🔮 Predizioni & Spunti di Analisi</h4>
                         <div id="predizioneEsito">
-                            <p><strong>Gol Attesi:</strong> <span id="golAttesiOut">N/D</span></p>
-                            <p><strong>Probabilità Stimate 1X2:</strong> <span id="prob1X2Out">N/D</span></p>
-                            <p><strong>Probabilità Stimate Over 2.5 / Gol:</strong> <span id="probOverGolOut">N/D</span></p>
-                            <hr>
-                            <h5>Spunti dall'Analisi Statistica:</h5>
+                            <p><strong>Expected Goals (xG):</strong> <span id="golAttesiOut">N/D</span></p>
+                            <p><strong>Probabilità 1X2 (Poisson):</strong> <span id="prob1X2Out">N/D</span></p>
+                            <p><strong>Probabilità Over 2.5 / Gol:</strong> <span id="probOverGolOut">N/D</span></p>
+                            <hr style="margin: 20px 0; border: none; border-top: 2px solid #e9ecef;">
+                            <h5 style="margin-top: 15px; margin-bottom: 12px; color: #2d6a4f; font-family: 'Outfit', sans-serif;">💡 Spunti Intelligenti dall'Algoritmo:</h5>
                             <ul id="spuntiAnalisiList">
                                 <li>Calcolare i risultati per visualizzare gli spunti...</li>
                             </ul>
-                            <p><small><i>Nota: Questi spunti derivano da calcoli statistici sui dati inseriti e non costituiscono una garanzia di vincita. Gioca responsabilmente.</i></small></p>
+                            <p style="margin-top: 20px; font-size: 12px; color: #777; font-style: italic;">
+                                ⚠️ <strong>Disclaimer:</strong> Questi spunti derivano da calcoli statistici avanzati sui dati inseriti e non costituiscono una garanzia di vincita. Gioca responsabilmente.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -283,39 +324,27 @@
         </details>
 
         <details class="modulo" id="moduloPartiteSalvati">
-            <summary>Partite Salvate</summary>
+            <summary>💾 Partite Salvate</summary>
             <section id="partiteSalvati">
                 <h2>Partite Salvate</h2>
                 <div id="partiteSalvatiBody">
-                    </div>
+                    <p>Nessuna partita salvata.</p>
+                </div>
                 <div class="buttons" style="margin-top: 20px;">
-                    <button type="button" onclick="esportaPartite()">Esporta Lista</button>
-                    <button type="button" onclick="importaPartite()">Importa Lista</button>
-                    <button type="button" onclick="eliminaPartiteSalvati()">Elimina Partite Salvate</button>
-                    <button type="button" onclick="screenshotPartite()">Screenshot</button>
+                    <button type="button" onclick="esportaPartite()">📤 Esporta Lista</button>
+                    <button type="button" onclick="importaPartite()">📥 Importa Lista</button>
+                    <button type="button" onclick="eliminaPartiteSalvati()">🗑️ Elimina Tutte</button>
                 </div>
             </section>
         </details>
 
-        <details class="modulo" id="moduloStoricoGiocate">
-            <summary>Storico Giocate</summary>
-            <section id="storicoGiocate">
-                <h2>Storico Giocate</h2>
-                <table id="storicoGiocateTable">
-                    <thead>
-                        <tr>
-                            <th>Giocata</th>
-                            <th>Frequenza</th>
-                            <th class="sortable" onclick="ordinaStorico(2)">% Vittoria <span class="sort-arrow"></span></th>
-                            <th class="sortable" onclick="ordinaStorico(3)">% Perdita <span class="sort-arrow"></span></th>
-                        </tr>
-                    </thead>
-                    <tbody id="storicoGiocateBody">
-                        </tbody>
-                </table>
-            </section>
-        </details>
+        
+        <div style="text-align: center; margin-top: 40px; padding: 20px; color: #6c757d; font-size: 13px; border-top: 2px solid #e9ecef;">
+            <p><strong>⚽ Analisi Scommesse Sportive</strong> - Algoritmo Avanzato v2.0</p>
+            <p>Powered by: Distribuzione di Poisson • Peso Temporale • Momentum Index • Expected Goals • Confidence Score</p>
+        </div>
     </div>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="script.js"></script>
     <script>
