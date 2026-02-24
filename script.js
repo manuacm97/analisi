@@ -298,12 +298,12 @@ function calcolaRisultati() {
     }
 
     // Parametri aggiuntivi
-    let posizioneA = parseInt(formData.get('posizioneA')) || 1;
+    let posizioneA = parseInt(formData.get('posizioneA')) || 0;
     let totSquadreA = parseInt(formData.get('totSquadreA')) || 20;
-    let coeffA = parseFloat(formData.get('coeffA')) || 0;
-    let posizioneB = parseInt(formData.get('posizioneB')) || 1;
+    let tipoCompetizioneA = formData.get('tipoCompetizioneA') || 'campionato';
+    let posizioneB = parseInt(formData.get('posizioneB')) || 0;
     let totSquadreB = parseInt(formData.get('totSquadreB')) || 20;
-    let coeffB = parseFloat(formData.get('coeffB')) || 0;
+    let tipoCompetizioneB = formData.get('tipoCompetizioneB') || 'campionato';
 
     // === CALCOLI AVANZATI SQUADRA A ===
     
@@ -349,15 +349,21 @@ function calcolaRisultati() {
     
     // Punteggio complessivo (formula migliorata)
     const formaA = puntiA / 18; // 0-1
-    const posizioneNormA = 1 - ((posizioneA - 1) / (totSquadreA - 1)); // 0-1, migliore = più alto
+    const posizioneNormA = posizioneA > 0 ? 1 - ((posizioneA - 1) / (totSquadreA - 1)) : 0.5; // 0-1, migliore = più alto
     const attaccoA = mediaGolFattiPesataA / 3; // Normalizzato assumendo 3 gol = ottimo
     const difesaA = 1 - (mediaGolSubitiPesataA / 3); // Invertito
     const momentumNormA = (momentumA + 100) / 200; // -100,+100 -> 0-1
     
-    let punteggioTotaleA = (formaA * 0.3 + posizioneNormA * 0.25 + attaccoA * 0.2 + difesaA * 0.15 + momentumNormA * 0.1);
+    let punteggioTotaleA;
+    if (tipoCompetizioneA === 'coppa') {
+        // COPPA: più peso a forma recente e meno alla posizione
+        punteggioTotaleA = (formaA * 0.35 + posizioneNormA * 0.10 + attaccoA * 0.25 + difesaA * 0.15 + momentumNormA * 0.15);
+    } else {
+        // CAMPIONATO: pesi bilanciati
+        punteggioTotaleA = (formaA * 0.3 + posizioneNormA * 0.25 + attaccoA * 0.2 + difesaA * 0.15 + momentumNormA * 0.1);
+    }
     
-    // Adjustment per coefficiente e SoS
-    if (coeffA > 0) punteggioTotaleA += coeffA * 0.05;
+    // Adjustment per SoS
     if (sosA.completezza > 0.5) {
         // Se ha affrontato squadre forti (sos basso), bonus
         punteggioTotaleA += (1 - sosA.sos) * 0.05;
@@ -402,14 +408,20 @@ function calcolaRisultati() {
     const sosB = calcolaStrengthOfSchedule(posizioniAvversariB, totSquadreB);
     
     const formaB = puntiB / 18;
-    const posizioneNormB = 1 - ((posizioneB - 1) / (totSquadreB - 1));
+    const posizioneNormB = posizioneB > 0 ? 1 - ((posizioneB - 1) / (totSquadreB - 1)) : 0.5;
     const attaccoB = mediaGolFattiPesataB / 3;
     const difesaB = 1 - (mediaGolSubitiPesataB / 3);
     const momentumNormB = (momentumB + 100) / 200;
     
-    let punteggioTotaleB = (formaB * 0.3 + posizioneNormB * 0.25 + attaccoB * 0.2 + difesaB * 0.15 + momentumNormB * 0.1);
+    let punteggioTotaleB;
+    if (tipoCompetizioneB === 'coppa') {
+        // COPPA: più peso a forma recente e meno alla posizione
+        punteggioTotaleB = (formaB * 0.35 + posizioneNormB * 0.10 + attaccoB * 0.25 + difesaB * 0.15 + momentumNormB * 0.15);
+    } else {
+        // CAMPIONATO: pesi bilanciati
+        punteggioTotaleB = (formaB * 0.3 + posizioneNormB * 0.25 + attaccoB * 0.2 + difesaB * 0.15 + momentumNormB * 0.1);
+    }
     
-    if (coeffB > 0) punteggioTotaleB += coeffB * 0.05;
     if (sosB.completezza > 0.5) {
         punteggioTotaleB += (1 - sosB.sos) * 0.05;
     }
@@ -559,8 +571,8 @@ function calcolaRisultati() {
         nomeSquadraA, nomeSquadraB,
         golFattiA, golSubitiA, casaTrasfertaA, avversariA, posizioniAvversariA,
         golFattiB, golSubitiB, casaTrasfertaB, avversariB, posizioniAvversariB,
-        posizioneA, totSquadreA, coeffA,
-        posizioneB, totSquadreB, coeffB,
+        posizioneA, totSquadreA, tipoCompetizioneA,
+        posizioneB, totSquadreB, tipoCompetizioneB,
         punteggioTotaleA, punteggioTotaleB,
         xgCasa, xgTrasferta,
         prob1X2, probOverUnder,
@@ -1505,14 +1517,38 @@ function pulisciCampi() {
         // Pulisci parametri
         document.getElementsByName('posizioneA')[0].value = '';
         document.getElementsByName('totSquadreA')[0].value = '';
-        document.getElementsByName('coeffA')[0].value = 0;
         document.getElementsByName('posizioneB')[0].value = '';
         document.getElementsByName('totSquadreB')[0].value = '';
-        document.getElementsByName('coeffB')[0].value = 0;
+        
+        // Reset checkboxes tipo competizione
+        document.getElementById('tipoCompetizioneCampionatoA').checked = true;
+        document.getElementById('tipoCompetizioneCampionatoB').checked = true;
         
         // Reset dropdown partite precedenti
         document.getElementById('selezionaPartitaPrecedente').selectedIndex = 0;
         
         alert("Tutti i campi sono stati puliti!");
     }
+}
+
+// ========== FUNZIONE CHIUDI TUTTI MODULI ==========
+function chiudiTuttiModuli() {
+    document.querySelectorAll('.modulo').forEach(modulo => {
+        modulo.removeAttribute('open');
+    });
+}
+
+// ========== FUNZIONE CERCA GOOGLE ==========
+function cercaGoogle() {
+    const nomeSquadraA = document.getElementById('nomeSquadraA').value.trim();
+    const nomeSquadraB = document.getElementById('nomeSquadraB').value.trim();
+    
+    if (!nomeSquadraA || !nomeSquadraB) {
+        alert("Inserisci i nomi di entrambe le squadre prima di cercare notizie!");
+        return;
+    }
+    
+    const query = `${nomeSquadraA} ${nomeSquadraB} ultime news`;
+    const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    window.open(url, '_blank');
 }

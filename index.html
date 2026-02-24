@@ -117,9 +117,17 @@
                             </tbody>
                         </table>
                         <div class="parametri">
-                            <label>Posizione: <input type="number" name="posizioneA" min="1" required></label>
-                            <label>Tot. Squadre: <input type="number" name="totSquadreA" min="1" required></label>
-                            <label>Coefficiente: <input type="number" name="coeffA" min="0" step="0.1" value="0" required></label>
+                            <label>Posizione: <input type="number" name="posizioneA" min="0" placeholder="Opz." style="width: 80px;"></label>
+                            <label>Tot. Squadre: <input type="number" name="totSquadreA" min="1" value="20" style="width: 80px;"></label>
+                            <label style="margin-left: 10px;">
+                                Tipo: 
+                                <label style="font-weight: 400; margin-left: 8px;">
+                                    <input type="radio" name="tipoCompetizioneA" value="campionato" id="tipoCompetizioneCampionatoA" checked> Campionato
+                                </label>
+                                <label style="font-weight: 400; margin-left: 8px;">
+                                    <input type="radio" name="tipoCompetizioneA" value="coppa"> Coppa
+                                </label>
+                            </label>
                         </div>
                     </section>
 
@@ -188,9 +196,17 @@
                             </tbody>
                         </table>
                         <div class="parametri">
-                            <label>Posizione: <input type="number" name="posizioneB" min="1" required></label>
-                            <label>Tot. Squadre: <input type="number" name="totSquadreB" min="1" required></label>
-                            <label>Coefficiente: <input type="number" name="coeffB" min="0" step="0.1" value="0" required></label>
+                            <label>Posizione: <input type="number" name="posizioneB" min="0" placeholder="Opz." style="width: 80px;"></label>
+                            <label>Tot. Squadre: <input type="number" name="totSquadreB" min="1" value="20" style="width: 80px;"></label>
+                            <label style="margin-left: 10px;">
+                                Tipo: 
+                                <label style="font-weight: 400; margin-left: 8px;">
+                                    <input type="radio" name="tipoCompetizioneB" value="campionato" id="tipoCompetizioneCampionatoB" checked> Campionato
+                                </label>
+                                <label style="font-weight: 400; margin-left: 8px;">
+                                    <input type="radio" name="tipoCompetizioneB" value="coppa"> Coppa
+                                </label>
+                            </label>
                         </div>
                     </section>
                 </div>
@@ -201,7 +217,8 @@
                     </select>
                     <button type="button" onclick="calcolaRisultati()">🧮 Calcola Risultati</button>
                     <button type="button" onclick="salvaPartita()">💾 Salva Partita</button>
-                    <button type="button" onclick="pulisciCampi()" style="background: #FF9500;">🧹 Pulisci Campi</button>
+                    <button type="button" onclick="cercaGoogle()" style="background: var(--accent-orange);">🔍 Cerca News</button>
+                    <button type="button" onclick="pulisciCampi()" style="background: var(--accent-purple);">🧹 Pulisci Campi</button>
                 </div>
             </form>
         </details>
