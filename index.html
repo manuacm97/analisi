@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisi Scommesse - Algoritmo Avanzato</title>
+    <link rel="stylesheet" href="styles.css">
+    
+    <link rel="icon" href="/icons/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/svg+xml" href="/icons/favicon.svg">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#2d6a4f">
+</head>
+<body>
+    <div class="container">
+        <button id="homeButton" onclick="chiudiTuttiModuli()">🏠 Home</button>
+        <h1>⚽ Analisi Scommesse Sportive</h1>
+
+        <details class="modulo" id="moduloInserimentoDati" open>
+            <summary>📋 Inserimento Dati</summary>
+            <form id="formAnalisi">
+                <div class="nomi-squadre">
+                    <div>
+                        <label>Squadra Casa: <input type="text" id="nomeSquadraA" required></label>
+                        <div class="squadra-buttons">
+                            <button type="button" onclick="generaFile('A')">Genera File</button>
+                            <button type="button" onclick="importaFile('A')">Importa File</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label>Squadra Trasferta: <input type="text" id="nomeSquadraB" required></label>
+                        <div class="squadra-buttons">
+                            <button type="button" onclick="generaFile('B')">Genera File</button>
+                            <button type="button" onclick="importaFile('B')">Importa File</button>
+                        </div>
+                    </div>
+                </div>
+
+                <details class="generatore">
+                    <summary>⚡ Generatore Rapido (copia da sito)</summary>
+                    <div class="generatore-form">
+                        <label>Inserisci Dati Squadra (testo - 7 righe per partita):</label>
+                        <textarea id="textInput" rows="10" placeholder="Esempio:&#10;09/03/2025&#10;SA&#10;Empoli&#10;Roma&#10;0&#10;1&#10;S&#10;06/03/2025&#10;EL&#10;Roma&#10;Ath. Bilbao&#10;2&#10;1&#10;V"></textarea>
+                        <button type="button" onclick="generaFileDaTesto()">Genera File</button>
+                        <p style="margin-top: 10px; font-size: 13px; color: #6c757d;">
+                            💡 <strong>Workflow:</strong> Copia dati dal sito → Genera File → Importa File → <strong>POI</strong> compila le posizioni avversari nella tabella sotto
+                        </p>
+                    </div>
+                </details>
+
+                <div class="tabelle-affiancate">
+                    <section class="squadra">
+                        <h2 id="titoloSquadraA">Squadra A (Casa)</h2>
+                        <table id="squadraA">
+                            <thead>
+                                <tr>
+                                    <th>Squadra Avversaria</th>
+                                    <th>Gol Fatti</th>
+                                    <th>Gol Subiti</th>
+                                    <th>Esito</th>
+                                    <th>C/T</th>
+                                    <th style="width: 70px;">Pos. Avv.<br><small>(opz.)</small></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="text" name="avversarioA1"></td>
+                                    <td><select name="golFattiA1"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiA1"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaA1"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvA1" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" name="avversarioA2"></td>
+                                    <td><select name="golFattiA2"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiA2"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaA2"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvA2" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" name="avversarioA3"></td>
+                                    <td><select name="golFattiA3"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiA3"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaA3"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvA3" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" name="avversarioA4"></td>
+                                    <td><select name="golFattiA4"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiA4"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaA4"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvA4" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" name="avversarioA5"></td>
+                                    <td><select name="golFattiA5"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiA5"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaA5"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvA5" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" name="avversarioA6"></td>
+                                    <td><select name="golFattiA6"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiA6"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaA6"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvA6" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="parametri">
+                            <label>Posizione: <input type="number" name="posizioneA" min="0" placeholder="Opz." style="width: 80px;"></label>
+                            <label>Tot. Squadre: <input type="number" name="totSquadreA" min="1" value="20" style="width: 80px;"></label>
+                            <label style="margin-left: 10px;">
+                                Tipo: 
+                                <label style="font-weight: 400; margin-left: 8px;">
+                                    <input type="radio" name="tipoCompetizioneA" value="campionato" id="tipoCompetizioneCampionatoA" checked> Campionato
+                                </label>
+                                <label style="font-weight: 400; margin-left: 8px;">
+                                    <input type="radio" name="tipoCompetizioneA" value="coppa"> Coppa
+                                </label>
+                            </label>
+                        </div>
+                        <div style="background: var(--bg-main); padding: 12px; border-radius: var(--radius); border: 1.5px solid var(--border); margin-top: 12px; font-size: 13px; color: var(--text);">
+                            <strong>ℹ️ Analisi Coppa:</strong> Nelle competizioni a coppa l'algoritmo dà più peso alla <strong>forma recente</strong> (+35% vs 30%) e al <strong>momentum</strong> (+15% vs 10%), mentre riduce l'importanza della <strong>posizione in classifica</strong> (10% vs 25%). Considera anche: turnover/rotazioni, motivazioni specifiche del match, calendario congestionato e stile di gioco.
+                        </div>
+                    </section>
+
+                    <section class="squadra">
+                        <h2 id="titoloSquadraB">Squadra B (Trasferta)</h2>
+                        <table id="squadraB">
+                            <thead>
+                                <tr>
+                                    <th>Squadra Avversaria</th>
+                                    <th>Gol Fatti</th>
+                                    <th>Gol Subiti</th>
+                                    <th>Esito</th>
+                                    <th>C/T</th>
+                                    <th style="width: 70px;">Pos. Avv.<br><small>(opz.)</small></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="text" name="avversarioB1"></td>
+                                    <td><select name="golFattiB1"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiB1"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaB1"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvB1" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" name="avversarioB2"></td>
+                                    <td><select name="golFattiB2"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiB2"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaB2"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvB2" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" name="avversarioB3"></td>
+                                    <td><select name="golFattiB3"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiB3"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaB3"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvB3" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" name="avversarioB4"></td>
+                                    <td><select name="golFattiB4"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiB4"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaB4"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvB4" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" name="avversarioB5"></td>
+                                    <td><select name="golFattiB5"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiB5"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaB5"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvB5" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="text" name="avversarioB6"></td>
+                                    <td><select name="golFattiB6"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><select name="golSubitiB6"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option></select></td>
+                                    <td><span class="esito"></span></td>
+                                    <td><select name="casaTrasfertaB6"><option value="C">C</option><option value="T">T</option></select></td>
+                                    <td><input type="number" name="posAvvB6" min="1" max="30" placeholder="-" style="width: 60px;"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="parametri">
+                            <label>Posizione: <input type="number" name="posizioneB" min="0" placeholder="Opz." style="width: 80px;"></label>
+                            <label>Tot. Squadre: <input type="number" name="totSquadreB" min="1" value="20" style="width: 80px;"></label>
+                            <label style="margin-left: 10px;">
+                                Tipo: 
+                                <label style="font-weight: 400; margin-left: 8px;">
+                                    <input type="radio" name="tipoCompetizioneB" value="campionato" id="tipoCompetizioneCampionatoB" checked> Campionato
+                                </label>
+                                <label style="font-weight: 400; margin-left: 8px;">
+                                    <input type="radio" name="tipoCompetizioneB" value="coppa"> Coppa
+                                </label>
+                            </label>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="buttons">
+                    <select id="selezionaPartitaPrecedente">
+                        <option value="">-- Seleziona Partita Precedente --</option>
+                    </select>
+                    <button type="button" onclick="calcolaRisultati()">🧮 Calcola Risultati</button>
+                    <button type="button" onclick="salvaPartita()">💾 Salva Partita</button>
+                    <button type="button" onclick="cercaGoogle()" style="background: #C85C3C;">🔍 Cerca News</button>
+<button type="button" onclick="pulisciCampi()" style="background: #7FAA6D;">🧹 Pulisci Campi</button>
+
+                </div>
+            </form>
+        </details>
+
+        <details class="modulo" id="moduloRisultati">
+            <summary>📊 Risultati Analisi</summary>
+            <section id="risultati">
+                <h2>Risultati Analisi</h2>
+                <div class="tabelle-risultati">
+                    <table id="risultatiSquadraA">
+                        <thead>
+                            <tr>
+                                <th colspan="2" id="nomeRisultatiA">Squadra A</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Popolato da JS -->
+                        </tbody>
+                    </table>
+                    
+                    <table id="risultatiSquadraB">
+                        <thead>
+                            <tr>
+                                <th colspan="2" id="nomeRisultatiB">Squadra B</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Popolato da JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </details>
+
+        <details class="modulo" id="moduloPercentualiEsiti">
+            <summary>📈 Percentuali Esiti</summary>
+            <section id="percentualiEsitiSection">
+                <h2>Percentuali Esiti</h2>
+                <table id="percentualiEsiti">
+                    <thead>
+                        <tr>
+                            <th style="text-align: left;">Esito</th>
+                            <th>Squadra A</th>
+                            <th>Squadra B</th>
+                            <th>Totale</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Popolato da JS -->
+                    </tbody>
+                </table>
+            </section>
+        </details>
+
+        <details class="modulo" id="moduloPercentualiCasaTrasferta">
+            <summary>📊 Percentuali Casa vs Trasferta</summary>
+            <section id="percentualiCasaTrasfertaSection">
+                <h2>Percentuali: Squadra Casa in Casa vs Squadra Trasferta in Trasferta</h2>
+                <p style="color: #8F8B87; font-size: 13px; margin-bottom: 12px;">
+                    Analisi specifica quando la squadra casa gioca in casa e la squadra trasferta in trasferta.
+                </p>
+                <table id="percentualiCasaTrasferta">
+                    <thead>
+                        <tr>
+                            <th style="text-align: left;">Esito</th>
+                            <th>Squadra A (Casa)</th>
+                            <th>Squadra B (Trasferta)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Popolato da JS -->
+                    </tbody>
+                </table>
+            </section>
+        </details>
+
+        <details class="modulo" id="moduloTendenzaCasaTrasferta">
+            <summary>🏟️ Tendenza Casa/Trasferta</summary>
+            <section id="tendenzaCasaTrasferta">
+                <h2>Tendenza Casa/Trasferta</h2>
+                <table id="tendenzaCasaTrasfertaTable">
+                    <thead>
+                        <tr>
+                            <th id="casaSquadraA">Squadra A (Casa)</th>
+                            <th>Statistica</th>
+                            <th id="trasfertaSquadraB">Squadra B (Trasferta)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Popolato da JS -->
+                    </tbody>
+                </table>
+            </section>
+        </details>
+
+        <details class="modulo" id="moduloAnalisiDettagliata">
+            <summary>🎯 Analisi Dettagliata & Predizioni</summary>
+            <section id="analisiDettagliata">
+                <h3>Analisi Dettagliata</h3>
+                <div id="analisiDettagliataBody">
+                    <div class="analisi-container">
+                        <h4>💪 Confronto Forma</h4>
+                        <div id="confrontoForma">
+                            <p>Calcola i risultati per visualizzare il confronto...</p>
+                        </div>
+                    </div>
+                    
+                    <div class="analisi-container">
+                        <h4>📊 Statistiche Chiave</h4>
+                        <table id="statisticheChiave">
+                            <thead>
+                                <tr>
+                                    <th>Statistica</th>
+                                    <th id="nomeStatA" style="min-width: 100px;">Squadra A</th>
+                                    <th id="nomeStatB" style="min-width: 100px;">Squadra B</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Popolato da JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="analisi-container">
+                        <h4>🔮 Predizioni & Spunti di Analisi</h4>
+                        <div id="predizioneEsito">
+                            <p><strong>Expected Goals (xG):</strong> <span id="golAttesiOut">N/D</span></p>
+                            <p><strong>Probabilità 1X2 (Poisson):</strong> <span id="prob1X2Out">N/D</span></p>
+                            <p><strong>Probabilità Over 2.5 / Gol:</strong> <span id="probOverGolOut">N/D</span></p>
+                            <hr style="margin: 20px 0; border: none; border-top: 2px solid #e9ecef;">
+                            <h5 style="margin-top: 15px; margin-bottom: 12px; color: #2d6a4f; font-family: 'Outfit', sans-serif;">💡 Spunti Intelligenti dall'Algoritmo:</h5>
+                            <ul id="spuntiAnalisiList">
+                                <li>Calcolare i risultati per visualizzare gli spunti...</li>
+                            </ul>
+                            <p style="margin-top: 20px; font-size: 12px; color: #777; font-style: italic;">
+                                ⚠️ <strong>Disclaimer:</strong> Questi spunti derivano da calcoli statistici avanzati sui dati inseriti e non costituiscono una garanzia di vincita. Gioca responsabilmente.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </details>
+
+       
+
+        <details class="modulo" id="moduloPartiteSalvati">
+            <summary>💾 Partite Salvate</summary>
+            <section id="partiteSalvati">
+                <h2>Partite Salvate</h2>
+                <div id="partiteSalvatiBody">
+                    <p>Nessuna partita salvata.</p>
+                </div>
+                <div class="buttons" style="margin-top: 20px;">
+                    <button type="button" onclick="esportaPartite()">📤 Esporta Lista</button>
+                    <button type="button" onclick="importaPartite()">📥 Importa Lista</button>
+                    <button type="button" onclick="eliminaPartiteSalvati()">🗑️ Elimina Tutte</button>
+                </div>
+            </section>
+        </details>
+
+        
+        <div style="text-align: center; margin-top: 40px; padding: 20px; color: #6c757d; font-size: 13px; border-top: 2px solid #e9ecef;">
+            <p><strong>⚽ Analisi Scommesse Sportive</strong> - Algoritmo Avanzato v2.0</p>
+            <p>Powered by: Distribuzione di Poisson • Peso Temporale • Momentum Index • Expected Goals • Confidence Score</p>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="script.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => console.log('Service Worker registrato:', registration))
+                    .catch(error => console.log('Errore Service Worker:', error));
+            });
+        }
+    </script>
+</body>
+</html>
