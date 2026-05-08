@@ -514,6 +514,7 @@ function calcolaRisultati() {
     // === POPOLA PERCENTUALI ESITI ===
     
     popolaPercentualiEsiti(golFattiA, golSubitiA, golFattiB, golSubitiB);
+    popolaPercentualiCasaTrasferta();
     
     // === POPOLA TENDENZA CASA/TRASFERTA ===
     
@@ -1060,12 +1061,24 @@ function caricaDatiPartita(partita) {
     }
     
     document.getElementsByName('posizioneA')[0].value = partita.posizioneA || '';
-    document.getElementsByName('totSquadreA')[0].value = partita.totSquadreA || '';
-    document.getElementsByName('coeffA')[0].value = partita.coeffA || 0;
+    document.getElementsByName('totSquadreA')[0].value = partita.totSquadreA || 20;
+    
+    // Ripristina tipo competizione A
+    if (partita.tipoCompetizioneA === 'coppa') {
+        document.querySelector('input[name="tipoCompetizioneA"][value="coppa"]').checked = true;
+    } else {
+        document.getElementById('tipoCompetizioneCampionatoA').checked = true;
+    }
     
     document.getElementsByName('posizioneB')[0].value = partita.posizioneB || '';
-    document.getElementsByName('totSquadreB')[0].value = partita.totSquadreB || '';
-    document.getElementsByName('coeffB')[0].value = partita.coeffB || 0;
+    document.getElementsByName('totSquadreB')[0].value = partita.totSquadreB || 20;
+    
+    // Ripristina tipo competizione B
+    if (partita.tipoCompetizioneB === 'coppa') {
+        document.querySelector('input[name="tipoCompetizioneB"][value="coppa"]').checked = true;
+    } else {
+        document.getElementById('tipoCompetizioneCampionatoB').checked = true;
+    }
     
     if (partita.giocata) {
         giocataManuale = partita.giocata;
@@ -1551,4 +1564,164 @@ function cercaGoogle() {
     const query = `${nomeSquadraA} ${nomeSquadraB} ultime news`;
     const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
     window.open(url, '_blank');
+}
+
+// ========== FUNZIONE STATISTICHE WEB ==========
+async function cercaStatisticheWeb() {
+    const nomeSquadraA = document.getElementById('nomeSquadraA').value.trim();
+    const nomeSquadraB = document.getElementById('nomeSquadraB').value.trim();
+    
+    if (!nomeSquadraA || !nomeSquadraB) {
+        alert("Inserisci i nomi di entrambe le squadre prima di cercare statistiche!");
+        return;
+    }
+    
+    // Mostra sezione e loading
+    const moduloStats = document.getElementById('moduloStatisticheWeb');
+    if (moduloStats) {
+        moduloStats.setAttribute('open', '');
+    }
+    
+    const container = document.getElementById('statisticheWebContent');
+    if (!container) return;
+    
+    container.innerHTML = '<div class="web-stats-loading">🔍 Ricerca statistiche in corso...</div>';
+    
+    // Apri ricerca in nuova tab
+    const query = `${nomeSquadraA} vs ${nomeSquadraB} statistiche formazioni ultime partite`;
+    const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+    window.open(url, '_blank');
+    
+    // Mostra messaggio informativo
+    setTimeout(() => {
+        container.innerHTML = `
+            <div class="web-stats-container">
+                <h4>📊 Ricerca Aperta</h4>
+                <p>La ricerca per <strong>${nomeSquadraA} vs ${nomeSquadraB}</strong> è stata aperta in una nuova scheda.</p>
+                <p style="margin-top: 12px;">Consulta:</p>
+                <ul style="margin-left: 20px; margin-top: 8px; line-height: 1.8;">
+                    <li>📈 <strong>Statistiche dirette</strong>: ultime partite tra le due squadre</li>
+                    <li>⚽ <strong>Formazioni probabili</strong>: giocatori titolari previsti</li>
+                    <li>🏥 <strong>Infortunati e squalificati</strong>: assenze importanti</li>
+                    <li>📰 <strong>Ultime notizie</strong>: motivazioni, turnover, obiettivi</li>
+                    <li>🎯 <strong>Quote bookmakers</strong>: confronto probabilità implicite</li>
+                </ul>
+                <button onclick="cercaStatisticheWeb()" style="margin-top: 16px; background: var(--primary);">🔄 Cerca di Nuovo</button>
+            </div>
+        `;
+    }, 500);
+}
+
+// ========== FUNZIONE PERCENTUALI CASA VS TRASFERTA ==========
+function popolaPercentualiCasaTrasferta() {
+    const tbody = document.getElementById('percentualiCasaTrasferta')?.querySelector('tbody');
+    if (!tbody || !datiAttuali) return;
+    
+    tbody.innerHTML = '';
+    
+    const golFattiA = datiAttuali.golFattiA || [];
+    const golSubitiA = datiAttuali.golSubitiA || [];
+    const casaTrasfertaA = datiAttuali.casaTrasfertaA || [];
+    const golFattiB = datiAttuali.golFattiB || [];
+    const golSubitiB = datiAttuali.golSubitiB || [];
+    const casaTrasfertaB = datiAttuali.casaTrasfertaB || [];
+    
+    // Filtra solo partite CASA per A
+    const indiciCasaA = casaTrasfertaA.map((ct, i) => ct === 'C' ? i : -1).filter(i => i >= 0);
+    const golFattiCasaA = indiciCasaA.map(i => golFattiA[i]);
+    const golSubitiCasaA = indiciCasaA.map(i => golSubitiA[i]);
+    
+    // Filtra solo partite TRASFERTA per B
+    const indiciTrasfertaB = casaTrasfertaB.map((ct, i) => ct === 'T' ? i : -1).filter(i => i >= 0);
+    const golFattiTrasfertaB = indiciTrasfertaB.map(i => golFattiB[i]);
+    const golSubitiTrasfertaB = indiciTrasfertaB.map(i => golSubitiB[i]);
+    
+    // Totali gol per partita
+    const totaliCasaA = golFattiCasaA.map((gf, i) => gf + golSubitiCasaA[i]);
+    const totaliTrasfertaB = golFattiTrasfertaB.map((gf, i) => gf + golSubitiTrasfertaB[i]);
+    
+    const numCasaA = golFattiCasaA.length || 1;
+    const numTrasfertaB = golFattiTrasfertaB.length || 1;
+    
+    // === CALCOLI SPECIFICI CASA vs TRASFERTA ===
+    
+    // Gol/NoGol
+    const golCasa = golFattiCasaA.filter((gf, i) => gf > 0 && golSubitiCasaA[i] > 0).length / numCasaA * 100;
+    const nogolCasa = 100 - golCasa;
+    const golTrasf = golFattiTrasfertaB.filter((gf, i) => gf > 0 && golSubitiTrasfertaB[i] > 0).length / numTrasfertaB * 100;
+    const nogolTrasf = 100 - golTrasf;
+    
+    // Clean Sheet
+    const cleanCasa = golSubitiCasaA.filter(gs => gs === 0).length / numCasaA * 100;
+    const cleanTrasf = golSubitiTrasfertaB.filter(gs => gs === 0).length / numTrasfertaB * 100;
+    
+    // Over 0.5 Squadra
+    const over05Casa = golFattiCasaA.filter(gf => gf >= 1).length / numCasaA * 100;
+    const over05Trasf = golFattiTrasfertaB.filter(gf => gf >= 1).length / numTrasfertaB * 100;
+    
+    // Over/Under 2.5
+    const over25Casa = totaliCasaA.filter(t => t > 2).length / numCasaA * 100;
+    const under25Casa = 100 - over25Casa;
+    const over25Trasf = totaliTrasfertaB.filter(t => t > 2).length / numTrasfertaB * 100;
+    const under25Trasf = 100 - over25Trasf;
+    
+    // Over/Under 3.5
+    const over35Casa = totaliCasaA.filter(t => t > 3).length / numCasaA * 100;
+    const under35Casa = 100 - over35Casa;
+    const over35Trasf = totaliTrasfertaB.filter(t => t > 3).length / numTrasfertaB * 100;
+    const under35Trasf = 100 - over35Trasf;
+    
+    // Vittorie casa vs trasferta
+    const vittCasa = golFattiCasaA.filter((gf, i) => gf > golSubitiCasaA[i]).length / numCasaA * 100;
+    const vittTrasf = golFattiTrasfertaB.filter((gf, i) => gf > golSubitiTrasfertaB[i]).length / numTrasfertaB * 100;
+    
+    // Costruisci HTML
+    const statistiche = [
+        { categoria: 'RENDIMENTO', dati: [
+            { nome: 'Vittorie', valCasa: vittCasa, valTrasf: vittTrasf, ids: ['vittCasa', 'vittTrasf'] }
+        ]},
+        { categoria: 'GOL / NO GOL', dati: [
+            { nome: 'Gol (entrambe)', valCasa: golCasa, valTrasf: golTrasf, ids: ['golCasa', 'golTrasf'] },
+            { nome: 'No Gol', valCasa: nogolCasa, valTrasf: nogolTrasf, ids: ['nogolCasa', 'nogolTrasf'] }
+        ]},
+        { categoria: 'CLEAN SHEET', dati: [
+            { nome: 'Porta inviolata', valCasa: cleanCasa, valTrasf: cleanTrasf, ids: ['cleanCasa', 'cleanTrasf'] }
+        ]},
+        { categoria: 'OVER 0.5 SQUADRA', dati: [
+            { nome: 'Over 0.5 (segna)', valCasa: over05Casa, valTrasf: over05Trasf, ids: ['over05Casa', 'over05Trasf'] }
+        ]},
+        { categoria: 'OVER/UNDER 2.5', dati: [
+            { nome: 'Over 2.5', valCasa: over25Casa, valTrasf: over25Trasf, ids: ['over25Casa', 'over25Trasf'] },
+            { nome: 'Under 2.5', valCasa: under25Casa, valTrasf: under25Trasf, ids: ['under25Casa', 'under25Trasf'] }
+        ]},
+        { categoria: 'OVER/UNDER 3.5', dati: [
+            { nome: 'Over 3.5', valCasa: over35Casa, valTrasf: over35Trasf, ids: ['over35Casa', 'over35Trasf'] },
+            { nome: 'Under 3.5', valCasa: under35Casa, valTrasf: under35Trasf, ids: ['under35Casa', 'under35Trasf'] }
+        ]}
+    ];
+    
+    statistiche.forEach(gruppo => {
+        // Header categoria
+        const headerRow = document.createElement('tr');
+        headerRow.innerHTML = `<td colspan="3" style="background: var(--bg-main); font-weight: 700; text-align: left; padding: 8px; font-size: 12px;">${gruppo.categoria}</td>`;
+        tbody.appendChild(headerRow);
+        
+        // Righe dati
+        gruppo.dati.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td style="text-align: left; padding-left: 16px; font-size: 12px;">${item.nome}</td>
+                <td><span class="perc" id="${item.ids[0]}">${item.valCasa.toFixed(1)}%</span></td>
+                <td><span class="perc" id="${item.ids[1]}">${item.valTrasf.toFixed(1)}%</span></td>
+            `;
+            tbody.appendChild(row);
+            
+            // Colora percentuali
+            coloraPercentuale(item.valCasa, document.getElementById(item.ids[0]));
+            coloraPercentuale(item.valTrasf, document.getElementById(item.ids[1]));
+        });
+    });
+    
+    // Apri automaticamente il modulo
+    document.getElementById('moduloPercentualiCasaTrasferta')?.setAttribute('open', '');
 }

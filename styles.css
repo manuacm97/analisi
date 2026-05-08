@@ -1,29 +1,27 @@
-/* ==========================================
-   ANALISI SCOMMESSE - ULTRA MINIMAL COLORATO
-   ========================================== */
+/* ANALISI SCOMMESSE - CLAUDE.AI STYLE COMPATTO */
 
 :root {
-    /* Color Palette - Vivace e Minimal */
-    --primary: #0066FF;
-    --primary-light: #4D94FF;
-    --accent-green: #00D68F;
-    --accent-orange: #FF9F43;
-    --accent-red: #FF5252;
-    --accent-purple: #8B5CF6;
-    --bg-main: #FAFBFC;
-    --bg-card: #FFFFFF;
-    --text: #4A5568;
-    --text-dark: #2D3748;
-    --border: #E2E8F0;
-    --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    --primary: #6B7F5E;
+    --primary-light: #8B9F7E;
+    --primary-dark: #4A5E3D;
+    --accent: #C85C3C;
+    --accent-green: #7FAA6D;
+    --accent-red: #D9654E;
+    --bg-main: #F5F3EE;
+    --bg-card: #FEFDFB;
+    --text: #5A5653;
+    --text-dark: #2E2B29;
+    --text-light: #8F8B87;
+    --border: #E5E1DB;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
     
-    /* Spacing Ridotti */
-    --space-xs: 0.4rem;
-    --space-sm: 0.75rem;
-    --space-md: 1rem;
-    --space-lg: 1.5rem;
+    /* Spacing - Ultra Compatti */
+    --space-xs: 0.25rem;
+    --space-sm: 0.4rem;
+    --space-md: 0.65rem;
+    --space-lg: 0.85rem;
+    --space-xl: 1.1rem;
     
-    /* Border Radius Minimal */
     --radius: 6px;
 }
 
@@ -34,17 +32,17 @@
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Arial, sans-serif;
     background: var(--bg-main);
     color: var(--text);
     font-size: 14px;
-    line-height: 1.5;
+    line-height: 1.4;
     padding: var(--space-md);
     -webkit-font-smoothing: antialiased;
 }
 
 .container {
-    max-width: 1300px;
+    max-width: 1400px;
     margin: 0 auto;
     background: var(--bg-card);
     padding: var(--space-lg);
@@ -53,24 +51,27 @@ body {
 }
 
 h1 {
-    font-size: clamp(22px, 4vw, 32px);
-    font-weight: 700;
+    font-family: "Tiempos Text", Georgia, serif;
+    font-size: clamp(22px, 3vw, 32px);
+    font-weight: 400;
     text-align: center;
     color: var(--text-dark);
     margin-bottom: var(--space-lg);
-    letter-spacing: -0.5px;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
 }
 
 h2 {
+    font-family: "Tiempos Text", Georgia, serif;
     font-size: 18px;
-    font-weight: 600;
+    font-weight: 400;
     color: var(--text-dark);
     margin-bottom: var(--space-md);
 }
 
 h3 {
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-dark);
     margin: var(--space-md) 0 var(--space-sm);
 }
@@ -85,43 +86,43 @@ h4 {
 #homeButton {
     display: block;
     margin: 0 auto var(--space-md);
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    background: var(--primary);
     color: white;
-    padding: 10px 24px;
+    padding: 8px 20px;
     border: none;
     border-radius: var(--radius);
     cursor: pointer;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: 500;
     position: sticky;
     top: 8px;
     z-index: 1000;
     box-shadow: var(--shadow);
-    transition: all 0.2s;
+    transition: all 0.2s ease;
 }
 
 #homeButton:hover {
+    background: var(--primary-dark);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 102, 255, 0.25);
 }
 
 button {
     background: var(--primary);
     color: white;
-    padding: 8px 16px;
+    padding: 7px 14px;
     border: none;
     border-radius: var(--radius);
     cursor: pointer;
     font-size: 13px;
-    font-weight: 600;
-    margin: 0 6px;
-    transition: all 0.2s;
+    font-weight: 500;
+    margin: 0 4px;
+    transition: all 0.2s ease;
     white-space: nowrap;
 }
 
 button:hover {
+    background: var(--primary-dark);
     transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 102, 255, 0.2);
 }
 
 button:active {
@@ -134,15 +135,11 @@ button:active {
     font-size: 12px;
 }
 
-.elimina-btn:hover {
-    box-shadow: 0 4px 8px rgba(255, 82, 82, 0.2);
-}
-
 input[type="text"],
 input[type="number"],
 select,
 textarea {
-    padding: 7px 10px;
+    padding: 6px 10px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     font-size: 13px;
@@ -152,16 +149,16 @@ textarea {
     font-family: inherit;
 }
 
-input[type="text"]:focus,
-input[type="number"]:focus,
+input:focus,
 select:focus,
 textarea:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(0, 102, 255, 0.1);
+    box-shadow: 0 0 0 2px rgba(107, 127, 94, 0.1);
 }
 
-input[type="checkbox"] {
+input[type="checkbox"],
+input[type="radio"] {
     width: 16px;
     height: 16px;
     margin-right: 6px;
@@ -180,25 +177,25 @@ table {
 }
 
 th {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    background: var(--primary);
     color: white;
-    font-weight: 600;
-    font-size: 12px;
+    font-weight: 500;
+    font-size: 11px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    padding: 8px 6px;
+    letter-spacing: 0.05em;
+    padding: 7px 6px;
     text-align: center;
 }
 
 td {
     border: 1px solid var(--border);
-    padding: 6px 4px;
+    padding: 5px 4px;
     text-align: center;
     background: white;
 }
 
 tr:hover td {
-    background: #F7FAFC;
+    background: var(--bg-main);
 }
 
 .nomi-squadre {
@@ -207,22 +204,23 @@ tr:hover td {
     gap: var(--space-md);
     margin-bottom: var(--space-lg);
     padding: var(--space-md);
-    background: #F7FAFC;
+    background: var(--bg-main);
     border-radius: var(--radius);
+    border: 1px solid var(--border);
 }
 
 .nomi-squadre label {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-dark);
     font-size: 13px;
 }
 
 .tabelle-affiancate {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
     gap: var(--space-md);
     margin: var(--space-md) 0;
 }
@@ -241,7 +239,7 @@ tr:hover td {
     height: 24px;
     line-height: 24px;
     border-radius: 50%;
-    font-weight: 700;
+    font-weight: 600;
     font-size: 11px;
 }
 
@@ -251,7 +249,7 @@ tr:hover td {
 }
 
 .esito.pareggio {
-    background: #A0AEC0;
+    background: var(--text-light);
     color: white;
 }
 
@@ -261,7 +259,7 @@ tr:hover td {
 }
 
 .esito-select {
-    padding: 5px 8px;
+    padding: 5px 10px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     font-size: 12px;
@@ -274,14 +272,12 @@ tr:hover td {
     background: var(--accent-green) !important;
     color: white !important;
     border-color: var(--accent-green) !important;
-    font-weight: 700;
 }
 
 .esito-select.perdente {
     background: var(--accent-red) !important;
     color: white !important;
     border-color: var(--accent-red) !important;
-    font-weight: 700;
 }
 
 .perc {
@@ -289,7 +285,7 @@ tr:hover td {
     padding: 3px 8px;
     border-radius: var(--radius);
     color: white;
-    font-weight: 700;
+    font-weight: 600;
     min-width: 45px;
     text-align: center;
     font-size: 12px;
@@ -297,20 +293,20 @@ tr:hover td {
 
 .perc-vincente {
     display: inline-block;
-    padding: 5px 12px;
+    padding: 4px 12px;
     border-radius: var(--radius);
     background: var(--accent-green);
     color: white;
-    font-weight: 700;
-    margin-left: 10px;
+    font-weight: 600;
+    margin-left: 8px;
     font-size: 13px;
 }
 
 .punteggio {
     font-size: 20px;
-    font-weight: 700;
+    font-weight: 600;
     color: var(--primary);
-    padding: 4px 10px;
+    padding: 4px 8px;
     display: inline-block;
 }
 
@@ -323,18 +319,18 @@ tr:hover td {
 }
 
 .modulo summary {
-    font-weight: 600;
-    font-size: 15px;
+    font-weight: 500;
+    font-size: 14px;
     cursor: pointer;
     color: white;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-    padding: 12px 16px;
+    background: var(--primary);
+    padding: 10px 16px;
     user-select: none;
-    transition: all 0.2s;
+    transition: all 0.2s ease;
 }
 
 .modulo summary:hover {
-    background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+    background: var(--primary-dark);
 }
 
 .modulo > *:not(summary) {
@@ -343,9 +339,11 @@ tr:hover td {
 
 #risultati,
 #percentualiEsitiSection,
+#percentualiCasaTrasfertaSection,
 #tendenzaCasaTrasferta,
 #analisiDettagliata,
-#partiteSalvati {
+#partiteSalvati,
+#statisticheWeb {
     margin-top: var(--space-md);
     padding: var(--space-md);
     background: white;
@@ -355,14 +353,14 @@ tr:hover td {
 
 .tabelle-risultati {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: var(--space-md);
 }
 
 .analisi-container {
     margin-bottom: var(--space-md);
     padding: var(--space-md);
-    background: #F7FAFC;
+    background: var(--bg-main);
     border: 1px solid var(--border);
     border-radius: var(--radius);
 }
@@ -371,10 +369,10 @@ tr:hover td {
     display: inline-block;
     padding: 3px 10px;
     border-radius: var(--radius);
-    font-weight: 700;
+    font-weight: 600;
     font-size: 10px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.05em;
     margin-left: 8px;
 }
 
@@ -384,7 +382,7 @@ tr:hover td {
 }
 
 .confidence-medium {
-    background: var(--accent-orange);
+    background: var(--accent);
     color: white;
 }
 
@@ -394,9 +392,9 @@ tr:hover td {
 }
 
 .highlight {
-    font-weight: 700;
+    font-weight: 600;
     color: var(--primary);
-    background: rgba(0, 102, 255, 0.1);
+    background: rgba(107, 127, 94, 0.1);
     padding: 2px 6px;
     border-radius: 4px;
 }
@@ -405,7 +403,7 @@ tr:hover td {
 #predizioneEsito p {
     margin: 8px 0;
     color: var(--text);
-    line-height: 1.6;
+    line-height: 1.5;
 }
 
 #predizioneEsito ul {
@@ -417,27 +415,29 @@ tr:hover td {
 #predizioneEsito li {
     padding: 10px 12px;
     margin-bottom: 6px;
-    background: #F7FAFC;
+    background: var(--bg-main);
     border-left: 3px solid var(--primary);
     border-radius: var(--radius);
     font-size: 13px;
+    line-height: 1.5;
 }
 
 .parametri {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-md);
-    margin-top: var(--space-md);
+    margin-top: var(--space-sm);
     padding: var(--space-md);
-    background: #F7FAFC;
+    background: var(--bg-main);
     border-radius: var(--radius);
+    border: 1px solid var(--border);
 }
 
 .parametri label {
     display: flex;
     align-items: center;
     gap: 6px;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-dark);
     font-size: 13px;
 }
@@ -448,7 +448,7 @@ tr:hover td {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
     align-items: center;
 }
 
@@ -474,16 +474,16 @@ tr:hover td {
 }
 
 .generatore summary {
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
     color: var(--text-dark);
-    background: #F7FAFC;
+    background: var(--bg-main);
     padding: 10px 14px;
     font-size: 13px;
 }
 
 .generatore summary:hover {
-    background: #EDF2F7;
+    background: var(--border);
 }
 
 .generatore-form {
@@ -492,25 +492,24 @@ tr:hover td {
 
 .generatore-form textarea {
     width: 100%;
-    min-height: 150px;
+    min-height: 130px;
     padding: 10px;
-    font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+    font-family: 'SF Mono', Monaco, monospace;
     font-size: 12px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     resize: vertical;
 }
 
-.gioco-input,
-.gruppo-input {
-    width: 90px;
+.gioco-input {
+    width: 85px;
     padding: 5px;
     text-align: center;
     font-size: 12px;
 }
 
 #selezionaPartitaPrecedente {
-    padding: 8px 12px;
+    padding: 7px 12px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
     font-size: 13px;
@@ -520,7 +519,7 @@ tr:hover td {
 }
 
 .sequenza-cell {
-    padding: 6px;
+    padding: 5px;
 }
 
 #sequenzaA,
@@ -531,31 +530,57 @@ tr:hover td {
     flex-wrap: wrap;
 }
 
-.tipo-competizione {
-    display: inline-block;
-    padding: 3px 8px;
+.info-box {
+    background: var(--bg-main);
+    padding: var(--space-md);
     border-radius: var(--radius);
-    font-size: 11px;
-    font-weight: 700;
-    margin-left: 8px;
+    border: 1px solid var(--border);
+    margin-top: var(--space-sm);
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.5;
 }
 
-.tipo-campionato {
-    background: var(--primary);
-    color: white;
+.web-stats-container {
+    background: var(--bg-main);
+    padding: var(--space-lg);
+    border-radius: var(--radius);
+    margin-top: var(--space-md);
 }
 
-.tipo-coppa {
-    background: var(--accent-purple);
-    color: white;
+.web-stats-loading {
+    text-align: center;
+    padding: var(--space-xl);
+    color: var(--text-light);
+    font-style: italic;
+}
+
+.web-stats-content {
+    display: grid;
+    gap: var(--space-md);
+}
+
+.stat-card {
+    background: white;
+    padding: var(--space-md);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+}
+
+.stat-card h4 {
+    color: var(--primary);
+    margin-bottom: var(--space-sm);
+    font-size: 13px;
+}
+
+.stat-card p {
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--text);
 }
 
 @media (max-width: 1024px) {
     .tabelle-affiancate {
-        grid-template-columns: 1fr;
-    }
-    
-    .tabelle-risultati {
         grid-template-columns: 1fr;
     }
 }
@@ -574,99 +599,35 @@ tr:hover td {
         margin-bottom: var(--space-md);
     }
     
-    h2 {
-        font-size: 16px;
-    }
-    
     .nomi-squadre {
         grid-template-columns: 1fr;
-        gap: var(--space-sm);
-        padding: var(--space-sm);
     }
     
     .tabelle-affiancate {
         grid-template-columns: 1fr;
-        gap: var(--space-sm);
-    }
-    
-    .squadra {
-        padding: var(--space-sm);
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
     }
     
     table {
         font-size: 11px;
         display: block;
         overflow-x: auto;
-        white-space: nowrap;
     }
     
-    th,
-    td {
-        padding: 5px 3px;
-    }
-    
-    .buttons {
-        gap: 6px;
+    th, td {
+        padding: 4px 3px;
     }
     
     button {
-        padding: 7px 12px;
+        padding: 6px 10px;
         font-size: 12px;
-        margin: 0;
-    }
-    
-    .esito {
-        width: 22px;
-        height: 22px;
-        line-height: 22px;
-        font-size: 10px;
     }
     
     .parametri {
         flex-direction: column;
         gap: var(--space-sm);
     }
-    
-    .modulo summary {
-        font-size: 14px;
-        padding: 10px 12px;
-    }
-    
-    #selezionaPartitaPrecedente {
-        max-width: 100%;
-        font-size: 12px;
-    }
-}
-
-@media (max-width: 480px) {
-    .container {
-        padding: var(--space-sm);
-    }
-    
-    h1 {
-        font-size: 18px;
-    }
-    
-    table {
-        font-size: 10px;
-    }
-    
-    button {
-        padding: 6px 10px;
-        font-size: 11px;
-    }
-    
-    .gioco-input {
-        width: 70px;
-        font-size: 11px;
-    }
 }
 
 .text-center {
     text-align: center;
 }
-
-.mb-sm { margin-bottom: var(--space-sm); }
-.mb-md { margin-bottom: var(--space-md); }
