@@ -103,13 +103,27 @@ textarea{resize:vertical;font-size:12px;font-family:'SF Mono',monospace;line-hei
 </nav>
 <script>
 var SK='asv14';
+// Clear any legacy keys that might interfere
+try{var _lk=['as_v4','as_v3','asv13'];_lk.forEach(function(k){if(localStorage.getItem(k))localStorage.removeItem(k);});}catch(e){}
 var COMPS=[{id:'camp',l:'Campionato',d:'Forma 30% · Posizione 25% · Attacco 20% · Difesa 15% · Momentum 10%'},{id:'coppa',l:'Coppa Nazionale',d:'Forma 40% · Posizione 5% · Attacco 25% · Difesa 15% · Momentum 15%'},{id:'euro',l:'Europa/Internazionale',d:'Forma 35% · Attacco 25% · Difesa 20% · Momentum 20% — classifica non rilevante'},{id:'amich',l:'Amichevole',d:'Alta incertezza — considera rotazioni e motivazione ridotta'}];
 var WW={camp:{f:.30,p:.25,a:.20,d:.15,m:.10},coppa:{f:.40,p:.05,a:.25,d:.15,m:.15},euro:{f:.35,p:0,a:.25,d:.20,m:.20},amich:{f:.20,p:0,a:.20,d:.20,m:.10}};
 function emptyM(){var r=[];for(var i=0;i<8;i++)r.push({avv:'',gf:0,gs:0,ct:'C',posAvv:0});return r;}
 function defS(){return{tA:{name:'',pos:0,tot:20,comp:'camp',matches:emptyM()},tB:{name:'',pos:0,tot:20,comp:'camp',matches:emptyM()},standings:{},tot:20};}
 var S=defS(),AN=null,STOR=[];
 var AT='input';
-function load(){try{var d=localStorage.getItem(SK);if(d){var p=JSON.parse(d);S=p.s||defS();AN=p.a||null;STOR=p.h||[];}}catch(e){}}
+function load(){
+  try{
+    var d=localStorage.getItem(SK);
+    if(d){
+      var p=JSON.parse(d);
+      S=p.s||defS();
+      // Backward compat: pad matches to 8
+      while(S.tA.matches.length<8)S.tA.matches.push({avv:'',gf:0,gs:0,ct:'C',posAvv:0});
+      while(S.tB.matches.length<8)S.tB.matches.push({avv:'',gf:0,gs:0,ct:'C',posAvv:0});
+      AN=p.a||null;STOR=p.h||[];
+    }
+  }catch(e){S=defS();AN=null;STOR=[];}
+}
 function save(){try{localStorage.setItem(SK,JSON.stringify({s:S,a:AN,h:STOR}));}catch(e){}}
 function go(t){var ts=document.querySelectorAll('.tab'),bs=document.querySelectorAll('.nb');for(var i=0;i<ts.length;i++)ts[i].classList.remove('on');for(var i=0;i<bs.length;i++)bs[i].classList.remove('on');document.getElementById('tab-'+t).classList.add('on');document.querySelector('.nb[data-t="'+t+'"]').classList.add('on');AT=t;draw();}
 
@@ -135,55 +149,82 @@ function parse7Lines(text){
 
 function parseStandText(text){
   var lines=text.split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>0;});
-  var result={};var maxPos=0;
-  var linkRe=/^\[([^\]]+)\]\(https?:\/\//;
+  var result={},pos=1,maxPos=0;
 
-  // Detect SofaScore markdown-link table format (many [value](url) lines)
-  var linkCount=0;
-  for(var i=0;i<lines.length;i++)if(linkRe.test(lines[i]))linkCount++;
-
-  if(linkCount>=3){
-    // SofaScore format: extract team names from markdown links by order
-    // Team names are NOT: pure numbers, scores (X:Y), single W/D/L, +/-numbers
-    var posCounter=1;
-    for(var i=0;i<lines.length;i++){
-      var m=linkRe.exec(lines[i]);if(!m)continue;
-      var val=m[1];
-      if(/^\d+$/.test(val))continue;       // pure number (pts, games etc)
-      if(/^\d+:\d+$/.test(val))continue;  // score like 82:31
-      if(/^[WDLwdl]$/.test(val))continue;  // single result letter
-      if(/^[+\-]\d+$/.test(val))continue; // goal diff +51 or -8
-      if(val.length<=2)continue;            // too short
-      result[val.toLowerCase().trim()]=posCounter;
-      if(posCounter>maxPos)maxPos=posCounter;
-      posCounter++;
-    }
-    if(Object.keys(result).length>0)return{standings:result,total:maxPos};
+  // Normalize: strip common club prefixes/suffixes for dedup
+  function normName(n){
+    return n.toLowerCase()
+      .replace(/^(ssc|ss|asc?|uc?|fc?|bv|sh?v|hfc?|rc?|gc?)\s+/,'')
+      .replace(/^(hellas|us|vf|sv|rb|psv)\s+/,'')
+      .replace(/\s+(fc?|sc?|calcio|cf|cfc|afc|bc|bk)$/,'')
+      .trim();
   }
 
-  // Plain text formats
-  var pos=null;
+  // FORMAT 1: SofaScore markdown links [value](url)
+  var linkRe=/^\[([^\]]+)\]\(https?:\/\//;
+  var SKIP1=/^(squadra|team|club|pts|pos|rank|form|ultime|diff|gls|pld|mp|gf|ga|gd|played|won|draw|lost|p|w|d|l|g|f|a|n)$/i;
+  var allVals=[];
+  for(var i=0;i<lines.length;i++){var m=linkRe.exec(lines[i]);if(m)allVals.push(m[1]);}
+  if(allVals.length>=3){
+    var seen={};
+    for(var i=0;i<allVals.length;i++){
+      var val=allVals[i];
+      if(/^\d+$/.test(val)||/^\d+:\d+$/.test(val)||/^[WDLwdl]$/.test(val)||/^[+\-]\d+$/.test(val)||val.length<3)continue;
+      if(!(/[A-Za-z\u00C0-\u024F]/.test(val)))continue;
+      if(SKIP1.test(val.trim().split(/\s+/)[0]))continue;
+      var key=val.toLowerCase().trim();var nk=normName(key);
+      if(!seen[nk]){seen[nk]=1;result[key]=pos++;}
+    }
+    if(Object.keys(result).length>2)return{standings:result,total:Object.keys(result).length};
+    result={};pos=1;
+  }
+
+  // FORMAT 2: "2 Inter 35..." or "1. Roma" - numbered rows
+  // Extract pairs, renumber sequentially, deduplicate by normalized name
+  var pairs=[];
+  var SKIP2=/^(w|d|l|gf|ga|gd|pts|pld|mp|p|g|f|a|n|diff|gls|pos|rank)$/i;
   for(var i=0;i<lines.length;i++){
     var l=lines[i];
-    // Flashscore: "1." on its own, then "[TeamName](url)" next
-    var posOnly=/^(\d{1,2})\.$/.exec(l);
-    var linkName=linkRe.exec(l);
-    if(posOnly){pos=parseInt(posOnly[1]);continue;}
-    if(pos!==null&&linkName){
-      var nm=linkName[1];
-      if(!/^\d+$/.test(nm)&&nm.length>2){result[nm.toLowerCase().trim()]=pos;if(pos>maxPos)maxPos=pos;}
-      pos=null;continue;
-    }
-    // "1. Roma" or "1) Roma" or "1  Roma"
-    var m2=l.match(/^(\d{1,2})[.)\s]\s*([A-Za-z\u00C0-\u024F][A-Za-z\u00C0-\u024F\s'.\-]{1,28})/);
-    if(m2){
-      var p3=parseInt(m2[1]);
-      var raw=m2[2].replace(/\(.*?\)/,'').trim().split(/\s{2,}|\t|\s\d/)[0].trim();
-      if(raw.length>1&&raw.length<26){result[raw.toLowerCase()]=p3;if(p3>maxPos)maxPos=p3;}
-      pos=null;
+    var m=l.match(/^(\d{1,2})[\s.)]+([A-Za-z\u00C0-\u024F][A-Za-z\u00C0-\u024F\s'.&-]{1,26})/);
+    if(m){
+      var p=parseInt(m[1]);
+      var raw=m[2].trim();
+      var name=raw.split(/\s{2,}|\t|\s\d/)[0].trim();
+      if(name.length>1&&p>=1&&p<=50&&!SKIP2.test(name))pairs.push({p:p,n:name.toLowerCase()});
     }
   }
-  return{standings:result,total:maxPos||20};
+  if(pairs.length>2){
+    pairs.sort(function(a,b){return a.p-b.p;});
+    var seen2={};
+    for(var i=0;i<pairs.length;i++){
+      var nk=normName(pairs[i].n);
+      if(!seen2[nk]){seen2[nk]=1;result[pairs[i].n]=pos++;}
+    }
+    if(Object.keys(result).length>2)return{standings:result,total:Object.keys(result).length};
+    result={};pos=1;
+  }
+
+  // FORMAT 3: sequential names — lines starting with capital letter
+  var SKIP3=/^(squadra|team|club|pts|pld|mp|gf|ga|gd|diff|gls|ultime|rank|pos|form|serie|classifica|campionato|coppa|lega|stagione|totale|giornata|data|competizione|gruppo|gironi)$/i;
+  var seen3={};
+  for(var i=0;i<lines.length;i++){
+    var l=lines[i];
+    if(/^\d+$/.test(l)||l.length<3)continue;
+    // Skip pure stat lines
+    if(/^[+\-]\d+$/.test(l)||/^\d+:\d+$/.test(l))continue;
+    var m=l.match(/^([A-Z][A-Za-z\u00C0-\u024F\s'.&-]{2,28})(?:\s+\d.*)?$/);
+    if(m){
+      var name=m[1].trim().split(/\s{2,}/)[0].trim();
+      var fw=name.split(/\s+/)[0];
+      if(SKIP3.test(fw)||SKIP3.test(name))continue;
+      if(name.length<3||name.length>30)continue;
+      var nk=normName(name.toLowerCase());
+      if(!seen3[nk]){seen3[nk]=1;result[name.toLowerCase()]=pos++;}
+    }
+  }
+  if(Object.keys(result).length>2)return{standings:result,total:pos-1};
+
+  return{standings:{},total:0};
 }
 
 function findPos(name,standings){
@@ -297,7 +338,7 @@ function renderInput(){
     h+='<button class="btn bd bsm" style="margin-bottom:8px" onclick="resetStand()">🗑 Azzera Classifica</button>';
   }
   h+='<div class="al aw" style="font-size:11px;margin-bottom:8px"><strong>Metodo 1 (Scoreaxis widget):</strong> crea un widget su scoreaxis.com, incolla il codice embed — l\'app estrae i dati automaticamente.<br><strong>Metodo 2 (Testo):</strong> copia il testo della classifica da qualsiasi sito e incollalo qui. Formati supportati: "1. Roma", "1  Roma  28pt", tabelle con numeri.</div>';
-  h+='<div class="ig"><textarea id="txtStand" rows="4" placeholder="Incolla iframe SofaScore oppure testo classifica..."></textarea></div>';
+  h+='<div class="ig"><textarea id="txtStand" rows="4" placeholder="Incolla qui il testo della classifica SofaScore (copia tutta la tabella)&#10;oppure: 1. Roma, 2. Inter, 3. Milan..."></textarea></div>';
   h+='<div class="br"><button id="standBtn" class="btn ba bsm" onclick="importStand()">📥 Importa Classifica</button></div>';
   h+='<div id="standErr" style="display:none;margin-top:6px"></div>';
   h+='</div><div style="height:16px"></div>';
@@ -355,43 +396,46 @@ function resetAll(){if(!confirm('Azzerare tutto?'))return;S=defS();AN=null;save(
 function resetStand(){S.standings={};S.tot=20;S.tA.pos=0;S.tB.pos=0;save();renderInput();}
 
 async function importStand(){
-  var el=document.getElementById('txtStand'),errEl=document.getElementById('standErr'),btn=document.getElementById('standBtn');
-  if(!el||!el.value.trim()){alert('Incolla prima il contenuto');return;}
+  var el=document.getElementById('txtStand');
+  var errEl=document.getElementById('standErr');
+  var btn=document.getElementById('standBtn');
+  if(!el||!el.value.trim()){alert('Incolla prima il testo della classifica');return;}
   if(errEl)errEl.style.display='none';
   var txt=el.value.trim();
-  // Try Scoreaxis widget URL/iframe
-  var saM=txt.match(/scoreaxis\.com[^"'\s]*[?&]instID=([A-Za-z0-9_-]+)/i)||
-           txt.match(/instID=([A-Za-z0-9_-]+)/i);
-  if(saM){
-    if(btn){btn.textContent='⏳ Caricamento Scoreaxis...';btn.disabled=true;}
-    try{
-      var url='https://data.scoreaxis.com/widget/league-table?instID='+saM[1]+'&format=json';
-      var resp=await fetch(url);
-      if(!resp.ok)throw new Error('HTTP '+resp.status);
-      var data=await resp.json();
-      var rows=data.table||data.standings||data.rows||data.data||[];
-      if(!rows.length)throw new Error('Nessun dato ricevuto');
-      var standings={},total=rows.length;
-      for(var i=0;i<rows.length;i++){
-        var nm=(rows[i].team_name||rows[i].name||rows[i].team||'').toLowerCase().trim();
-        var pos=rows[i].position||rows[i].rank||rows[i].pos||(i+1);
-        if(nm)standings[nm]=parseInt(pos)||i+1;
-      }
-      applyStand(standings,total);
-      el.value='';if(btn){btn.textContent='📥 Importa Classifica';btn.disabled=false;}
-      renderInput();return;
-    }catch(e){
-      if(btn){btn.textContent='📥 Importa Classifica';btn.disabled=false;}
-      if(errEl){errEl.style.display='block';errEl.className='al an';errEl.textContent='Scoreaxis: '+(e.message||String(e));}
-    }
-  }
-  // Text fallback - works always
+
+  // Parse text
   var r=parseStandText(txt);
-  if(!Object.keys(r.standings).length){
-    if(errEl){errEl.style.display='block';errEl.className='al an';errEl.textContent='Nessuna squadra rilevata. Puoi incollare: (1) il testo copiato dalla classifica SofaScore (copia tutta la tabella), (2) formato "1. Roma", (3) qualsiasi testo con numeri di posizione e nomi squadra.';}
+  var count=Object.keys(r.standings).length;
+
+  // DEBUG: show raw extracted link values
+  var linkRe=/^\[([^\]]+)\]\(https?:\/\//;
+  var lines=txt.split('\n').map(function(l){return l.trim();}).filter(function(l){return l.length>0;});
+  var rawVals=[];
+  for(var i=0;i<lines.length;i++){var m=linkRe.exec(lines[i]);if(m)rawVals.push(m[1]);}
+  var debugInfo='Link estratti: '+rawVals.length+'\nPrimi 15: '+rawVals.slice(0,15).join(' | ')+'\nSquadre trovate ('+count+'): ';
+  if(count>0){
+    var skeys2=Object.keys(r.standings).sort(function(a,b){return r.standings[a]-r.standings[b];});
+    debugInfo+=skeys2.slice(0,8).map(function(k){return r.standings[k]+'.'+k;}).join(', ');
+    if(skeys2.length>8)debugInfo+='...';
+  }
+
+  if(count<2){
+    if(errEl){
+      errEl.style.display='block';errEl.className='al an';
+      errEl.innerHTML='Nessuna squadra trovata.<br><small style="font-family:monospace;word-break:break-all">'+debugInfo.replace(/\n/g,'<br>')+'</small>';
+    }
     return;
   }
-  applyStand(r.standings,r.total);el.value='';renderInput();
+  applyStand(r.standings,r.total);
+  el.value='';
+  renderInput();
+  var freshErr=document.getElementById('standErr');
+  if(freshErr){
+    var skeys=Object.keys(r.standings).sort(function(a,b){return r.standings[a]-r.standings[b];});
+    var preview=skeys.map(function(k){return r.standings[k]+'.'+k;}).join(' | ');
+    freshErr.style.display='block';freshErr.className='al ap';
+    freshErr.innerHTML='<strong>'+count+' squadre:</strong><br><small style="font-family:monospace;word-break:break-all">'+preview+'</small><br><small style="color:var(--dim)">'+debugInfo.split('\n')[0]+'</small>';
+  }
 }
 
 function doAnalyze(){
@@ -589,7 +633,16 @@ function clearSt(){if(confirm('Svuotare tutto?')){STOR=[];save();renderStorico()
 function expSt(){var b=new Blob([JSON.stringify(STOR,null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='storico.json';a.click();}
 function impSt(e){var f=e.target.files[0];if(!f)return;var r=new FileReader();r.onload=function(ev){try{var p=JSON.parse(ev.target.result);if(Array.isArray(p)){STOR=p.concat(STOR);save();renderStorico();alert(p.length+' partite importate.');}else alert('File non valido.');}catch(err){alert('Errore: '+err.message);}};r.readAsText(f);e.target.value='';}
 
-function draw(){if(AT==='input')renderInput();else if(AT==='analisi')renderAnalisi();else if(AT==='storico')renderStorico();}
+function draw(){
+  try{
+    if(AT==='input')renderInput();
+    else if(AT==='analisi')renderAnalisi();
+    else if(AT==='storico')renderStorico();
+  }catch(e){
+    var el=document.getElementById('ct-'+AT)||document.body;
+    el.innerHTML='<div style="padding:16px;color:#e05c5c;font-family:monospace;font-size:11px;white-space:pre-wrap;background:#1a0808;border-radius:8px;margin:14px">Errore: '+e.message+'</div>';
+  }
+}
 (function(){if('serviceWorker' in navigator&&!navigator.standalone)window.addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});})();
 load();draw();
 </script>
