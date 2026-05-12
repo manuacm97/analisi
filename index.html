@@ -792,7 +792,7 @@ function updateKelly(){
   var suggestions=[];
   rows.forEach(function(row){
     var inp=row.querySelector('input');
-    var evEl=row.querySelector('td:last-child');
+    var evEl=row.querySelector('td:nth-last-child(2)'); // EV% is 2nd to last (last=Stor. alert)
     var nameEl=row.querySelector('td:first-child');
     if(!inp||!evEl||evEl.textContent==='—')return;
     var ev=parseFloat(evEl.textContent);
@@ -1000,7 +1000,106 @@ function saveSt(){
   e.bet='';e.quota='';e.risultato='';e.esito='';
   STOR.unshift(e);save();alert('Salvata!');
 }
-function reloadSt(idx){var s=STOR[idx];if(!s)return;AN=s;save();go('analisi');}
+function setTipo(idx,tipo){
+  STOR[idx].tipo=(['singola','combo'][tipo]||tipo);save();
+  renderStorico();
+  setTimeout(function(){var h=document.getElementById('hd'+idx);if(h)h.classList.add('open');},0);
+}
+function addSel(idx){}
+function remSel(idx,si){}
+function parseBet(text){
+  var t=(text||'').toLowerCase().trim();
+  if(!t)return{label:'?',bg:'rgba(255,255,255,.07)',col:'var(--dim)'};
+  // Half time FIRST (to avoid 1T Over matching as Over)
+  if(/(1t|primo.?tempo|1°.?tempo|first.?half)/.test(t)){
+    if(/over/.test(t)){var hM=t.match(/over[\/\s]?(\d+(?:[.,]\d)?)/);return{label:'1T Over '+(hM?hM[1]:''),bg:'rgba(62,207,142,.12)',col:'var(--pos)',cat:'1T_O'};}
+    if(/under/.test(t)){var hM=t.match(/under[\/\s]?(\d+(?:[.,]\d)?)/);return{label:'1T Under '+(hM?hM[1]:''),bg:'rgba(74,158,255,.12)',col:'var(--blue)',cat:'1T_U'};}
+    if(/1/.test(t))return{label:'1T 1',bg:'rgba(62,207,142,.12)',col:'var(--pos)',cat:'1T'};
+    if(/x/.test(t))return{label:'1T X',bg:'rgba(255,255,255,.1)',col:'var(--muted)',cat:'1T'};
+    if(/2/.test(t))return{label:'1T 2',bg:'rgba(74,158,255,.12)',col:'var(--blue)',cat:'1T'};
+    return{label:'1° Tempo',bg:'rgba(180,100,255,.15)',col:'#b464ff',cat:'1T'};
+  }
+  // Over/Under
+  var ouM=t.match(/(?:over|^o|\/o)[\/\s]?(\d+(?:[.,]\d+)?)/);if(ouM)return{label:'Over '+ouM[1].replace(',','.'),bg:'rgba(62,207,142,.15)',col:'var(--pos)',cat:'OVER'};
+  var uuM=t.match(/(?:under|^u|\/u)[\/\s]?(\d+(?:[.,]\d+)?)/);if(uuM)return{label:'Under '+uuM[1].replace(',','.'),bg:'rgba(74,158,255,.15)',col:'var(--blue)',cat:'UNDER'};
+  // BTTS / No Gol
+  if(/\b(btts|gg\b|gol.?gol|entrambe|both.?team|si$)/.test(t))return{label:'Gol Gol',bg:'rgba(62,207,142,.15)',col:'var(--pos)',cat:'BTTS'};
+  if(/\b(ng\b|no.?gol|no.?goal|no$)/.test(t))return{label:'No Gol',bg:'rgba(224,92,92,.15)',col:'var(--neg)',cat:'NG'};
+  // Double Chance
+  if(/\b(1x|dc.?1x|doppia.?1x)/.test(t))return{label:'DC 1X',bg:'rgba(245,166,35,.15)',col:'var(--accent)',cat:'DC1X'};
+  if(/\b(x2\b|dc.?x2)/.test(t))return{label:'DC X2',bg:'rgba(245,166,35,.15)',col:'var(--accent)',cat:'DCX2'};
+  if(/\b(12\b|dc.?12)/.test(t))return{label:'DC 12',bg:'rgba(245,166,35,.15)',col:'var(--accent)',cat:'DC12'};
+  // Draw No Bet
+  if(/\b(dnb|draw.?no.?bet)/.test(t)){if(/\b1\b/.test(t))return{label:'1 DNB',bg:'rgba(62,207,142,.15)',col:'var(--pos)',cat:'DNB'};if(/\b2\b/.test(t))return{label:'2 DNB',bg:'rgba(62,207,142,.15)',col:'var(--pos)',cat:'DNB'};}
+  // Half time
+  // 1T already handled above
+  // Multigol
+  var mgM=t.match(/(?:multigol|mg|goal[s]?)\s*(\d)-(\d)/)||t.match(/^(\d)-(\d)(?:\s*gol)?$/);
+  if(mgM)return{label:'MG '+mgM[1]+'-'+mgM[2],bg:'rgba(180,100,255,.15)',col:'#b464ff',cat:'MG'};
+  // Handicap (with optional team: 'hcp casa -1', 'hcp trasferta +1', 'hcp 2 +1')
+  if(/\b(hcp|handicap|ah|asian)\b/.test(t)){var hN=t.match(/([+\-]\d+(?:[.,]\d+)?)/);var hT='';if(/\b(casa|home)\b/.test(t))hT=' Casa';else if(/\b(trasferta|away)\b/.test(t))hT=' Trasferta';else if(/(^|\s)1(\s|$)/.test(t))hT=' Casa';else if(/(^|\s)2(\s|$)/.test(t))hT=' Trasferta';return{label:'HCP'+hT+(hN?' '+hN[1]:''),bg:'rgba(245,166,35,.15)',col:'var(--accent)',cat:'HCP'};}
+  // Risultato esatto (ALTRO)
+  var exM=t.match(/(?:esatto|exact|score)?\s*(\d+)[:\-](\d+)$/);
+  if(exM)return{label:'Esatto '+exM[1]+'-'+exM[2],bg:'rgba(255,100,150,.15)',col:'#ff6496',cat:'ESATTO'};
+  // Marcatore
+  if(/marcator|scorer|anytime|primo\s*gol|last\s*goal/.test(t))return{label:'Marcatore',bg:'rgba(255,100,150,.15)',col:'#ff6496',cat:'MARC'};
+  // Clean sheet
+  if(/clean.?sheet|porta.?inviol/.test(t))return{label:'Clean Sheet',bg:'rgba(62,207,142,.15)',col:'var(--pos)',cat:'CS'};
+  // Win to Nil
+  if(/win.?to.?nil|to.?nil|vinc.+zero/.test(t))return{label:'Win to Nil',bg:'rgba(62,207,142,.15)',col:'var(--pos)',cat:'WIN_NIL'};
+  // Parziale/Finale
+  if(/parziale|finale|ht.?ft|half.?time.?full/.test(t))return{label:'P/F',bg:'rgba(180,100,255,.15)',col:'#b464ff',cat:'HT_FT'};
+  // Corners / Angoli
+  if(/corner|angol/.test(t))return{label:'Corner',bg:'rgba(74,158,255,.15)',col:'var(--blue)',cat:'CORNER'};
+  // Cartellini
+  if(/cartell|card|ammoniz/.test(t))return{label:'Cartellini',bg:'rgba(255,200,0,.15)',col:'#ffc800',cat:'CARD'};
+  // 1X2 (last, generic)
+  if(/\b(1\b|casa|home|vittoria.?casa)/.test(t)&&!/\b(1t|1°)\b/.test(t))return{label:'1 Casa',bg:'rgba(62,207,142,.15)',col:'var(--pos)',cat:'1'};
+  if(/\b(pareggio|draw|\bx\b)/.test(t))return{label:'X Pareggio',bg:'rgba(255,255,255,.1)',col:'var(--muted)',cat:'X'};
+  if(/\b(2\b|trasferta|away|ospiti)/.test(t))return{label:'2 Trasferta',bg:'rgba(74,158,255,.15)',col:'var(--blue)',cat:'2'};
+  return{label:'Altro',bg:'rgba(255,255,255,.07)',col:'var(--dim)',cat:'ALTRO'};
+}
+function updBF(idx,fi){
+  var keys=['bet','bet2','bet3'];
+  var inp=document.getElementById('bf_'+idx+'_'+fi);
+  var bdg=document.getElementById('bf_badge_'+idx+'_'+fi);
+  if(!inp||!bdg)return;
+  var pb=parseBet(inp.value);
+  bdg.textContent=pb.label;bdg.style.background=pb.bg;bdg.style.color=pb.col;
+}
+function updBadge(idx){updBF(idx,0);}
+function updSelBadge(i,j){updBF(i,j);}
+function _oldUpdBadge(idx){
+  var inp=document.getElementById('bet_'+idx);
+  var bdg=document.getElementById('badge_'+idx);
+  if(!inp||!bdg)return;
+  var pb=parseBet(inp.value);
+  bdg.textContent=pb.label;bdg.style.background=pb.bg;bdg.style.color=pb.col;
+}
+function updSelBadge(idx,si){
+  var inp=document.getElementById('sel_'+idx+'_'+si);
+  var bdg=document.getElementById('sbadge_'+idx+'_'+si);
+  if(!inp||!bdg)return;
+  var pb=parseBet(inp.value);
+  bdg.textContent=pb.label;bdg.style.background=pb.bg;bdg.style.color=pb.col;
+}
+function reloadSt(idx){
+  var s=STOR[idx];if(!s)return;
+  AN=s;save();go('analisi');
+  // Restore saved EV quotes after render
+  if(s.evSaved){
+    var evIds=['ev_1','ev_X','ev_2','ev_o25','ev_u25','ev_btts','ev_nog','ev_1x','ev_x2'];
+    var evNames=['1','X','2','O2.5','U2.5','BTTS','NoG','1X','X2'];
+    setTimeout(function(){
+      for(var i=0;i<evNames.length;i++){
+        var saved=s.evSaved[evNames[i]];
+        if(!saved)continue;
+        var inp=document.getElementById(evIds[i]);
+        if(inp){inp.value=saved.q;calcEV(inp);}
+      }
+    },100);
+  }
+}
 
 function renderStorico(){
   var ct=document.getElementById('ct-storico');
@@ -1026,16 +1125,53 @@ function renderStorico(){
       var eC=s.esito==='V'?'hV':s.esito==='P'?'hP':'hN';
       var eT=s.esito==='V'?'✓':s.esito==='P'?'✗':'?';
       h+='<div class="hc"><div class="hr2" onclick="toggleH('+idx+')"><div class="ht">'+s.nA+' vs '+s.nB+'</div>';
+      if(s.tipo==='combo'){
+        var nComboSels=[s.bet,s.bet2,s.bet3].filter(function(x){return x&&x.trim();}).length;
+        h+='<span style="font-size:10px;font-weight:700;color:var(--blue);padding:1px 5px;border-radius:4px;background:rgba(74,158,255,.15);flex-shrink:0">🔗 ×'+nComboSels+'</span>';
+      } else if(s.bet){
+        var hpb=parseBet(s.bet);
+        h+='<span style="font-size:10px;font-weight:700;padding:1px 5px;border-radius:4px;background:'+hpb.bg+';color:'+hpb.col+';flex-shrink:0">'+hpb.label+'</span>';
+      }
       h+='<span class="hpred">'+s.mO+' '+s.mP+'%</span>';
       if(s.quota)h+='<span style="font-size:11px;color:var(--accent);font-weight:700">@'+s.quota+'</span>';
       if(s.ts)h+='<span style="font-size:10px;color:var(--dim)">'+s.ts+'</span>';
       h+='<div class="heb '+eC+'">'+eT+'</div></div>';
-      h+='<div class="hd" id="hd'+idx+'"><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">';
-      h+='<input style="flex:1;min-width:90px;font-size:13px;padding:6px 8px" type="text" placeholder="Scommessa" value="'+(s.bet||'')+'" onchange="STOR['+idx+'].bet=this.value;save()">';
-      h+='<input style="width:65px;font-size:13px;padding:6px 8px" type="number" step="0.01" placeholder="Quota" value="'+(s.quota||'')+'" onchange="STOR['+idx+'].quota=this.value;save()">';
-      h+='<input style="width:70px;font-size:13px;padding:6px 8px" type="text" placeholder="Ris." value="'+(s.risultato||'')+'" onchange="STOR['+idx+'].risultato=this.value;save()">';
-      h+='<select style="width:65px;font-size:13px;padding:6px 8px" onchange="STOR['+idx+'].esito=this.value;save();renderStorico()">';
-      h+='<option value="" '+(s.esito?'':'selected')+'>—</option><option value="V" '+(s.esito==='V'?'selected':'')+'>✅</option><option value="P" '+(s.esito==='P'?'selected':'')+'>❌</option></select></div>';
+      h+='<div class="hd" id="hd'+idx+'">';
+      var isSingola=(s.tipo||'singola')==='singola';
+      var isCombo=s.tipo==='combo';
+
+      // Row 1: toggle + quota + ris + esito
+      h+='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;align-items:center">';
+      h+='<div style="display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;flex-shrink:0">';
+      h+='<button style="padding:5px 12px;font-size:12px;font-weight:700;border:none;cursor:pointer;background:'+(isSingola?'var(--accent)':'var(--s3)')+';color:'+(isSingola?'#0c0c12':'var(--muted)')+'" onclick="setTipo('+idx+',0)">🎯 Singola</button>';
+      h+='<button style="padding:5px 12px;font-size:12px;font-weight:700;border:none;cursor:pointer;background:'+(isCombo?'var(--blue)':'var(--s3)')+';color:'+(isCombo?'#0c0c12':'var(--muted)')+'" onclick="setTipo('+idx+',1)">🔗 Combo</button>';
+      h+='</div>';
+      h+='<input style="width:68px;font-size:13px;padding:5px 7px;border-radius:7px;background:var(--s2);border:1px solid var(--border);color:var(--text)" type="number" step="0.01" placeholder="Quota" value="'+(s.quota||'')+'" onchange="STOR['+idx+'].quota=this.value;save()">';
+      h+='<input style="width:58px;font-size:13px;padding:5px 7px;border-radius:7px;background:var(--s2);border:1px solid var(--border);color:var(--text)" type="text" placeholder="Ris." value="'+(s.risultato||'')+'" onchange="STOR['+idx+'].risultato=this.value;save()">';
+      h+='<select style="width:58px;font-size:13px;padding:5px 7px;border-radius:7px;background:var(--s2);border:1px solid var(--border);color:var(--text)" onchange="STOR['+idx+'].esito=this.value;save();setTipo('+idx+',isCombo?1:0)">';
+      h+='<option value="" '+(s.esito?'':'selected')+'>—</option>';
+      h+='<option value="V" '+(s.esito==='V'?'selected':'')+'>✅</option>';
+      h+='<option value="P" '+(s.esito==='P'?'selected':'')+'>❌</option>';
+      h+='</select></div>';
+
+      // Singola: 1 field — Combo: 3 identical fields
+      var nFields=isSingola?1:3;
+      var betFields=['bet','bet2','bet3'];
+      var phTexts=[
+        'es. Over 2.5 · 1 · BTTS · MG 2-4 · DC 1X · HCP Casa -1 · 1T X · Esatto 2-1...',
+        'es. 1 · Over 1.5 · BTTS · DC X2...',
+        'es. BTTS · Under 3.5 · No Gol...'
+      ];
+      for(var fi=0;fi<nFields;fi++){
+        var fieldKey=betFields[fi];
+        var curVal=s[fieldKey]||'';
+        var pb=parseBet(curVal);
+        h+='<div style="display:flex;gap:5px;align-items:center;margin-bottom:4px">';
+        if(isCombo)h+='<span style="font-size:10px;color:var(--dim);width:12px;flex-shrink:0;text-align:right">'+(fi+1)+'.</span>';
+        h+='<input style="flex:1;font-size:13px;padding:5px 8px;border-radius:7px;background:var(--s2);border:1px solid var(--border);color:var(--text)" type="text" id="bf_'+idx+'_'+fi+'" placeholder="'+phTexts[fi]+'" value="'+curVal+'" oninput="STOR['+idx+'].'+fieldKey+'=this.value;save();updBF('+idx+','+fi+')" onchange="STOR['+idx+'].'+fieldKey+'=this.value;save()">';
+        h+='<span id="bf_badge_'+idx+'_'+fi+'" style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;flex-shrink:0;white-space:nowrap;background:'+pb.bg+';color:'+pb.col+'">'+pb.label+'</span>';
+        h+='</div>';
+      }
       h+='<div style="font-size:11px;color:var(--dim)">xG '+f1(s.xA,2)+'-'+f1(s.xB,2)+' &middot; Over2.5 '+f1(s.o25b)+'% &middot; BTTS '+f1(s.bttsb)+'%</div>';
       if(s.evSaved&&Object.keys(s.evSaved).length){
         h+='<div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:4px">';
