@@ -614,6 +614,13 @@ function renderAnalisi(){
   }
   var _userBets=[d._betFin,d._bet2Fin,d._bet3Fin].filter(function(x){return x&&x.trim();});
   var _userCats=_userBets.map(function(b){return parseBet(b).cat||'';});
+  var _mgBetRange=null;
+  _userBets.forEach(function(b){
+    if(_mgBetRange)return;
+    var bt=b.toLowerCase();
+    var mgM=bt.match(/(?:multigol|mg|goals?)\s*(\d)-(\d)/)||bt.match(/^(\d)-(\d)(?:\s*gol)?$/);
+    if(mgM)_mgBetRange=mgM[1]+'-'+mgM[2];
+  });
   var _hlOk='border-left:3px solid var(--pos);background:rgba(62,207,142,.07)';
   var _hlBet='border-left:3px solid var(--accent);background:rgba(245,166,35,.1)';
   var _hlWin='border-left:3px solid var(--pos);background:rgba(62,207,142,.15)';
@@ -668,7 +675,22 @@ function renderAnalisi(){
   h+='</div></div>';
 
   h+='<div class="card"><div class="cl">Multigol Totale</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px">';
-  for(var i=0;i<d.mg.length;i++){var mg=d.mg[i],c2=pc(mg.p);h+='<div class="mgc"><div class="mgl">'+mg.r+'</div><div class="mgv" style="color:'+c2+'">'+f1(mg.p)+'%</div></div>';}
+  for(var i=0;i<d.mg.length;i++){
+    var mg=d.mg[i],c2=pc(mg.p);
+    // Check if actual result total falls within this multigol range
+    var _mgHit=false;
+    if(_rParsed&&mg.r){
+      var _mgParts=mg.r.split('-');
+      if(_mgParts.length===2){var _mgLo=parseInt(_mgParts[0]),_mgHi=parseInt(_mgParts[1]);_mgHit=_rTot>=_mgLo&&_rTot<=_mgHi;}
+    }
+    var _mgBet=_mgBetRange!==null&&mg.r===_mgBetRange;
+    var _mgBg=_mgHit&&_mgBet?'rgba(62,207,142,.15)':_mgHit?'rgba(62,207,142,.07)':'';
+    var _mgBorder=_mgHit?'1.5px solid var(--pos)':'';
+    var _mgBadge=_mgHit?'<span style="font-size:8px;margin-left:2px">✓</span>':'';
+    h+='<div class="mgc" style="'+((_mgBg||_mgBorder)?'background:'+_mgBg+';border:'+_mgBorder+';':'')+'">';
+    h+='<div class="mgl">'+mg.r+_mgBadge+'</div>';
+    h+='<div class="mgv" style="color:'+c2+'">'+f1(mg.p)+'%</div></div>';
+  }
   h+='</div><div class="sec">Gol per Squadra</div><div class="g2">';
   var tgD=[[d.nA+' Over 0.5',d.tgA05],[d.nA+' Over 1.5',d.tgA15],[d.nB+' Over 0.5',d.tgB05],[d.nB+' Over 1.5',d.tgB15]];
   for(var i=0;i<tgD.length;i++){var g=tgD[i],c2=pc(g[1]);h+='<div class="st"><div class="sl">'+g[0]+'</div><div class="sv" style="color:'+c2+'">'+f1(g[1])+'%</div></div>';}
@@ -776,15 +798,15 @@ function renderAnalisi(){
   h+='<div style="font-size:12px;color:var(--muted);margin-bottom:10px"><strong>p_vera</strong> = probabilità del nostro modello. Inserisci la quota bookmaker → vedi EV% (verde=valore, rosso=bookmaker vince) e puntata Kelly ottimale.</div>';
   var storStats=getStoricoBetStats();
   var evMkts=[
-    ['Vittoria '+d.nA+' (1)',d.probs.p1,'ev_1','1'],
-    ['Pareggio (X)',d.probs.pX,'ev_X','X'],
-    ['Vittoria '+d.nB+' (2)',d.probs.p2,'ev_2','2'],
-    ['Over 2.5',d.o25b,'ev_o25','over25'],
-    ['Under 2.5',100-d.o25b,'ev_u25','under25'],
-    ['BTTS (Gol Gol)',d.bttsb,'ev_btts','btts'],
-    ['No Gol',100-d.bttsb,'ev_nog','noG'],
-    ['DC 1X',d.dc1X,'ev_1x','dc'],
-    ['DC X2',d.dcX2,'ev_x2','dc']
+    ['Vittoria '+d.nA+' (1)',d.probs.p1,'ev_1','1','1'],
+    ['Pareggio (X)',d.probs.pX,'ev_X','X','X'],
+    ['Vittoria '+d.nB+' (2)',d.probs.p2,'ev_2','2','2'],
+    ['Over 2.5',d.o25b,'ev_o25','over25','OVER'],
+    ['Under 2.5',100-d.o25b,'ev_u25','under25','UNDER'],
+    ['BTTS (Gol Gol)',d.bttsb,'ev_btts','btts','BTTS'],
+    ['No Gol',100-d.bttsb,'ev_nog','noG','NG'],
+    ['DC 1X',d.dc1X,'ev_1x','1X','DC1X'],
+    ['DC X2',d.dcX2,'ev_x2','X2','DCX2']
   ];
   h+='<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -4px"><table style="width:100%;min-width:380px;border-collapse:collapse;font-size:12px" id="evTable">';
   h+='<thead><tr>';
@@ -800,21 +822,26 @@ function renderAnalisi(){
     // Determine if this market was realized
     var _evCat=mk[3]||'';
     var _evHit=_rParsed&&(
-      (_evCat==='1'&&_rER==='1')||(_evCat==='X'&&_rER==='X')||(_evCat==='2'&&_rER==='2')||
-      (_evCat==='OVER'&&_rO25)||(_evCat==='UNDER'&&!_rO25)||
-      (_evCat==='BTTS'&&_rBTTS)||(_evCat==='NG'&&!_rBTTS)||
-      ((_evCat==='DC1X'||_evCat==='dc')&&(_rER==='1'||_rER==='X'))||
-      ((_evCat==='DCX2'||_evCat==='dc')&&(_rER==='2'||_rER==='X'))
+      (_evCat==='1'&&_rER==='1')||
+      (_evCat==='X'&&_rER==='X')||
+      (_evCat==='2'&&_rER==='2')||
+      (_evCat==='over25'&&_rO25)||
+      (_evCat==='under25'&&!_rO25)||
+      (_evCat==='btts'&&_rBTTS)||
+      (_evCat==='noG'&&!_rBTTS)||
+      (_evCat==='1X'&&(_rER==='1'||_rER==='X'))||
+      (_evCat==='X2'&&(_rER==='2'||_rER==='X'))
     );
-    var _evBet=_isBet([_evCat]);
-    var _evTrStyle=_evHit?(_evBet?'background:rgba(62,207,142,.1)':'background:rgba(62,207,142,.05)'):'';
+    var _evBetCat=mk[4]||mk[3];
+    var _evBet=_isBet([_evBetCat]);
+    var _evTrStyle=_evHit?(_evBet?'background:rgba(62,207,142,.1)':'background:rgba(62,207,142,.05)'):_evBet?'background:rgba(245,166,35,.05)':'';
     h+='<tr style="'+_evTrStyle+'"><td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px">'+mk[0]+(_evHit?'<span style="margin-left:4px;font-size:9px">✓</span>':'')+'</td>';
     h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center;font-weight:600;color:'+pc(mk[1])+'">'+f1(mk[1])+'%</td>';
     h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center;color:var(--muted)">'+be+'</td>';
     h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center">';
     h+='<input type="number" step="0.01" min="1.01" max="50" id="'+mk[2]+'" data-pv="'+pv.toFixed(4)+'" placeholder="1.85" style="width:60px;padding:3px 5px;font-size:13px;text-align:center;border-radius:6px;background:var(--s3);border:1px solid var(--border);color:var(--text)" oninput="calcEV(this)"></td>';
     h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center;font-weight:700" id="'+mk[2]+'_ev">—</td>';
-    h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center">'+getEvAlert(mk[3],storStats)+'</td>';
+    h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center">'+getEvAlert(_evBetCat,storStats)+'</td>';
     h+='</tr>';
   }
   h+='</tbody></table></div>';
@@ -903,22 +930,13 @@ function renderStorAnalysis(){
   }
 
   // === Analisi per mercato (dalla scommessa inserita) ===
+  var _catLabels={'1':'1 Casa','X':'X Pareggio','2':'2 Trasferta','OVER':'Over','UNDER':'Under','BTTS':'BTTS (Gol Gol)','NG':'No Gol','DC1X':'DC 1X','DCX2':'DC X2','DC12':'DC 12','MG':'Multigol','HCP':'Handicap','ESATTO':'Ris. Esatto','MARC':'Marcatore','CS':'Clean Sheet','1T':'1\u00b0 Tempo','WIN_NIL':'Win to Nil','HT_FT':'P/F','CORNER':'Corner','CARD':'Cartellini','DNB':'Draw No Bet','ALTRO':'Altro'};
   var mkMap={};
   settled.forEach(function(s){
     if(!s.bet||!s.bet.trim())return;
-    // Try to categorize the bet
-    var bet=s.bet.toLowerCase();
-    var mk='Altro';
-    if(/1|casa|home/.test(bet))mk='1 (Casa)';
-    else if(/x|pareggio|draw/.test(bet))mk='X (Pareggio)';
-    else if(/2|trasferta|away/.test(bet))mk='2 (Trasferta)';
-    else if(/over.?2\.?5|o2\.?5/.test(bet))mk='Over 2.5';
-    else if(/under.?2\.?5|u2\.?5/.test(bet))mk='Under 2.5';
-    else if(/over.?1\.?5|o1\.?5/.test(bet))mk='Over 1.5';
-    else if(/btts|gol.?gol|gg/.test(bet))mk='BTTS';
-    else if(/no.?gol|ng/.test(bet))mk='No Gol';
-    else if(/dc|doppia/.test(bet))mk='Doppia Chance';
-    else if(/\+[0-9]|handicap|ah/.test(bet))mk='Handicap';
+    var pb=parseBet(s.bet);
+    var cat=pb.cat||'ALTRO';
+    var mk=_catLabels[cat]||pb.label||'Altro';
     if(!mkMap[mk])mkMap[mk]={n:0,w:0,profit:0};
     mkMap[mk].n++;
     if(s.esito==='V'){mkMap[mk].w++;var q=parseFloat(s.quota);if(q)mkMap[mk].profit+=q-1;}
@@ -931,7 +949,7 @@ function renderStorAnalysis(){
     h+='<div style="font-size:11px;color:var(--muted);margin-bottom:8px">Basato su testo inserito nel campo Scommessa. Categorizzazione automatica.</div>';
     h+='<table style="width:100%;border-collapse:collapse;font-size:12px">';
     h+='<thead><tr>';
-    ['Mercato','N','✅','SR%','Profitto'].forEach(function(th){
+    ['Mercato','N','✅','SR%','ROI%'].forEach(function(th){
       h+='<th style="background:var(--s3);padding:5px 8px;text-align:'+(th==='Mercato'?'left':'center')+';font-size:9px;font-weight:700;text-transform:uppercase;color:var(--muted)">'+th+'</th>';
     });
     h+='</tr></thead><tbody>';
@@ -944,7 +962,8 @@ function renderStorAnalysis(){
       h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center">'+m.n+'</td>';
       h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center">'+m.w+'</td>';
       h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center;font-weight:700;color:'+srC+'">'+sr+'</td>';
-      h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center;font-weight:700;color:'+profC+'">'+(m.p>=0?'+':'')+m.p.toFixed(1)+'u</td>';
+      var roi=m.n>0?(m.p/m.n*100).toFixed(1):null;
+      h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center;font-weight:700;color:'+profC+'">'+(roi!==null?(parseFloat(roi)>=0?'+':'')+roi+'%':'—')+'</td>';
       h+='</tr>';
     });
     h+='</tbody></table></div>';
