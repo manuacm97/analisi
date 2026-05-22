@@ -105,10 +105,14 @@ textarea{resize:vertical;font-size:12px;font-family:'SF Mono',monospace;line-hei
 var SK='asv14';
 // Clear any legacy keys that might interfere
 try{var _lk=['as_v4','as_v3','asv13'];_lk.forEach(function(k){if(localStorage.getItem(k))localStorage.removeItem(k);});}catch(e){}
-var COMPS=[{id:'camp',l:'Campionato',d:'Forma 30% · Posizione 25% · Attacco 20% · Difesa 15% · Momentum 10%'},{id:'coppa',l:'Coppa Nazionale',d:'Forma 40% · Posizione 5% · Attacco 25% · Difesa 15% · Momentum 15%'},{id:'euro',l:'Europa/Internazionale',d:'Forma 35% · Attacco 25% · Difesa 20% · Momentum 20% — classifica non rilevante'},{id:'amich',l:'Amichevole',d:'Alta incertezza — considera rotazioni e motivazione ridotta'}];
-var WW={camp:{f:.30,p:.25,a:.20,d:.15,m:.10},coppa:{f:.40,p:.05,a:.25,d:.15,m:.15},euro:{f:.35,p:0,a:.25,d:.20,m:.20},amich:{f:.20,p:0,a:.20,d:.20,m:.10}};
+var COMPS=[{id:'camp',l:'Campionato',d:'Forma 30% · Posizione 25% · Attacco 20% · Difesa 15% · Momentum 10%'},{id:'coppa',l:'Coppa Nazionale',d:'Forma 40% · Attacco 25% · Difesa 15% · Momentum 15% — Campo neutro disponibile'},{id:'spareggio',l:'Spareggio (prom./retr.)',d:'Considera divisioni diverse e classifica — alta posta in gioco'},{id:'euro',l:'Competizioni Europee/Internazionali Club',d:'Qualità federazione pesa sulla performance — no bonus posizione campionato — Campo neutro disponibile'},{id:'naz',l:'Nazionale (qual. · tornei)',d:'Ranking FIFA + qualità federazione — no dato club — adatto a qualificazioni ed europei/mondiali'}];
+var WW={camp:{f:.30,p:.25,a:.20,d:.15,m:.10},coppa:{f:.40,p:.05,a:.25,d:.15,m:.15},spareggio:{f:.28,p:.12,a:.22,d:.20,m:.18},euro:{f:.35,p:0,a:.25,d:.20,m:.20},naz:{f:.30,p:0,a:.25,d:.25,m:.20}};
 function emptyM(){var r=[];for(var i=0;i<8;i++)r.push({avv:'',gf:0,gs:0,ct:'C',posAvv:0});return r;}
-function defS(){return{tA:{name:'',pos:0,tot:20,comp:'camp',matches:emptyM()},tB:{name:'',pos:0,tot:20,comp:'camp',matches:emptyM()},standings:{},tot:20};}
+var _stSort={fascia:{col:-1,dir:1},tipo:{col:-1,dir:1}};
+var _spuntiOpen=true;
+var _storFilt='all';
+var _storListOpen=true;
+function defS(){return{tA:{name:'',pos:0,tot:20,div:1,leagueTier:1,fifaRank:30,comp:'camp',inizioStagione:false,matches:emptyM()},tB:{name:'',pos:0,tot:20,div:1,leagueTier:1,fifaRank:50,comp:'camp',inizioStagione:false,matches:emptyM()},standings:{},standingsA:{},standingsB:{},tot:20,neutral:false,nazStage:0,firstLeg:{golA:'',golB:''}};}
 var S=defS(),AN=null,STOR=[];
 var AT='input';
 function load(){
@@ -414,7 +418,7 @@ function analyzeTeam(t){
   var score=(pts/Math.max(1,nReal*3))*w.f+posN*w.p+(mgfP/3)*w.a+(1-mgsP/3)*w.d+((mom+100)/200)*w.m;
   if(sos.comp>.5)score+=(1-sos.sos)*.05;
   score=Math.max(0,Math.min(1,score));
-  if(t.comp==='amich')score=score*.7+.15;
+  // amich mode removed
 
   var varG=0,mG=avg(realGF);
   for(var i=0;i<realGF.length;i++)varG+=(realGF[i]-mG)*(realGF[i]-mG);
@@ -432,6 +436,66 @@ function runAnalysis(){
   var nA=S.tA.name||'Casa',nB=S.tB.name||'Trasferta';
   var xA=Math.max(.15,(a.agfC||a.mgfP)*.6+(b.agsT||b.mgsP)*.4);
   var xB=Math.max(.15,(b.agfT||b.mgfP)*.6+(a.agsC||a.mgsP)*.4);
+  // === COMPETITION CORRECTIONS ===
+  var comp=S.tA.comp;
+  // Neutral ground: remove home advantage (~0.20 goals)
+  if(S.neutral){
+    xA=Math.max(.15,xA-0.20);
+    xB=Math.max(.15,xB+0.12);
+  }
+  // Club international: league quality tier adjustment
+  if(comp==='euro'){
+    var _TIER_Q={1:100,2:68,3:45,4:28,5:58,6:32,7:42,8:22};
+    var _qA=_TIER_Q[S.tA.leagueTier||1]||50,_qB=_TIER_Q[S.tB.leagueTier||1]||50;
+    var _qGap=(_qA-_qB)/100;
+    if(Math.abs(_qGap)>0.05){
+      xA=Math.max(.15,xA+_qGap*0.28);
+      xB=Math.max(.15,xB-_qGap*0.16);
+    }
+  }
+  // Spareggio: division level adjustment
+  if(comp==='spareggio'){
+    var _divDiff=(S.tB.div||1)-(S.tA.div||1);
+    if(Math.abs(_divDiff)>0){
+      xA=Math.max(.15,xA+_divDiff*0.20);
+      xB=Math.max(.15,xB-_divDiff*0.13);
+    }
+  }
+  // National teams: FIFA ranking adjustment
+  if(comp==='naz'){
+    var _rA=S.tA.fifaRank||50,_rB=S.tB.fifaRank||50;
+    var _rGap=(_rB-_rA)/80;
+    if(Math.abs(_rGap)>0.08){
+      var _rAdj=Math.max(-0.50,Math.min(0.50,_rGap*0.28));
+      xA=Math.max(.15,xA+_rAdj);
+      xB=Math.max(.15,xB-_rAdj*0.60);
+    }
+    // Knockout stages: higher tension → tighter, fewer goals; also boost WW.m
+    if((S.nazStage||0)>=3){xA=Math.max(.15,xA*0.88);xB=Math.max(.15,xB*0.88);}
+    else if((S.nazStage||0)>=2){xA=Math.max(.15,xA*0.93);xB=Math.max(.15,xB*0.93);}
+  }
+  // Inizio stagione: regress stats toward league mean, reduce momentum weight
+  var _isISA=S.tA.inizioStagione||false,_isISB=S.tB.inizioStagione||false;
+  if(_isISA||_isISB){
+    var _MEAN=1.38; // league average xG per team
+    if(_isISA){xA=xA*0.55+_MEAN*0.45;} // regress toward mean
+    if(_isISB){xB=xB*0.55+_MEAN*0.45;}
+  }
+  // First leg result adjustment (coppa/spareggio/euro)
+  var _fl=S.firstLeg||{};
+  var _flA=parseInt(_fl.golA),_flB=parseInt(_fl.golB);
+  if(!isNaN(_flA)&&!isNaN(_flB)){
+    // Aggregate advantage: positive = home team leads, negative = away team leads
+    var _aggAdv=_flA-_flB;
+    // Team behind needs to score more → boost xG; team ahead can sit back → reduce xG
+    if(_aggAdv>1){xA=Math.max(.15,xA*0.85);xB=Math.max(.15,xB*1.15);} // home leads by 2+: away must attack
+    else if(_aggAdv===1){xA=Math.max(.15,xA*0.92);xB=Math.max(.15,xB*1.08);} // home leads by 1: slight away boost
+    else if(_aggAdv===-1){xA=Math.max(.15,xA*1.08);xB=Math.max(.15,xB*0.92);} // away leads by 1: home boosts
+    else if(_aggAdv<-1){xA=Math.max(.15,xA*1.15);xB=Math.max(.15,xB*0.85);} // away leads by 2+: home must attack
+    // 0-0 draw: both need a goal, slight overall tension boost
+    if(_aggAdv===0&&_flA===0){xA=Math.max(.15,xA*1.04);xB=Math.max(.15,xB*1.04);}
+  }
+  // === END CORRECTIONS ===
   var probs=calc1X2(xA,xB),goals=calcGoals(xA,xB);
   var nGA=a.nReal||1,nGB=b.nReal||1;
   var histO25=(a.o25H/nGA+b.o25H/nGB)/2*100;
@@ -482,6 +546,67 @@ function renderInput(){
   h+='<div class="ig"><label class="il">✈️ Squadra Trasferta</label><input id="inB" type="text" value="'+S.tB.name+'" placeholder="Nome squadra" oninput="S.tB.name=this.value;save()"></div></div>';
   h+='<div class="ig"><label class="il">Competizione</label><select onchange="S.tA.comp=S.tB.comp=this.value;save();renderInput()">'+compOpts+'</select></div>';
   h+='<div class="al ai2" style="font-size:11px">'+compDesc+'</div>';
+  var _comp=S.tA.comp;
+  if(_comp==='coppa'||_comp==='spareggio'||_comp==='euro'||_comp==='naz'){
+    var _nOn=S.neutral;
+    h+='<div style="margin:10px 0 4px;display:flex;align-items:center;gap:10px">';
+    h+='<button onclick="S.neutral=!S.neutral;save();renderInput()" style="display:flex;align-items:center;gap:7px;padding:7px 14px;border-radius:8px;border:2px solid '+(_nOn?'var(--pos)':'var(--border)')+';background:'+(_nOn?'rgba(62,207,142,.15)':'transparent')+';cursor:pointer;font-size:13px;font-family:inherit;color:'+(_nOn?'var(--pos)':'var(--muted)')+'">';
+    h+='<span style="font-size:16px">'+(_nOn?'🟢':'⚪')+'</span>';
+    h+='<span style="font-weight:'+(_nOn?'700':'400')+'">Campo Neutro</span>';
+    h+=(_nOn?'<span style="font-size:10px;padding:1px 6px;background:var(--pos);color:#000;border-radius:4px;font-weight:700">ON</span>':'');
+    h+='</button></div>';
+  }
+  // Risultato andata (coppa/spareggio/euro)
+  if(_comp==='coppa'||_comp==='spareggio'||_comp==='euro'){
+    var _fl=S.firstLeg||{golA:'',golB:''};
+    var _flA=''+(_fl.golA!==undefined?_fl.golA:'');
+    var _flB=''+(_fl.golB!==undefined?_fl.golB:'');
+    var _flFilled=(_flA!==''&&_flA!==undefined&&_flB!==''&&_flB!==undefined);
+    h+='<div style="margin:10px 0 4px">';
+    h+='<div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">⚽ Risultato Partita di Andata (opzionale)</div>';
+    h+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">';
+    h+='<div style="display:flex;align-items:center;gap:6px">';
+    h+='<span style="font-size:12px;color:var(--muted)">'+(S.tA.name||'Casa')+' (1°)</span>';
+    h+='<input type="number" min="0" max="20" value="'+_flA+'" placeholder="-" style="width:50px;padding:5px;font-size:16px;font-weight:700;text-align:center;border-radius:7px;background:var(--s3);border:1px solid var(--border);color:var(--text);font-family:inherit" id="flA" oninput="S.firstLeg.golA=this.value;save()">';
+    h+='<span style="font-size:18px;font-weight:900;color:var(--dim)">–</span>';
+    h+='<input type="number" min="0" max="20" value="'+_flB+'" placeholder="-" style="width:50px;padding:5px;font-size:16px;font-weight:700;text-align:center;border-radius:7px;background:var(--s3);border:1px solid var(--border);color:var(--text);font-family:inherit" id="flB" oninput="S.firstLeg.golB=this.value;save()">';
+    h+='<span style="font-size:12px;color:var(--muted)">'+(S.tB.name||'Trasferta')+' (1°)</span>';
+    h+='</div>';
+    if(_flFilled){h+='<span style="font-size:11px;padding:3px 8px;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);border-radius:5px;color:var(--accent)">Agg. '+_flA+'–'+_flB+' · peso attivo</span>';}
+    if(_flFilled){h+='<button onclick="resetFirstLeg()" style="font-size:11px;padding:3px 8px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--dim);cursor:pointer;font-family:inherit">✕</button>';}
+    h+='</div></div>';
+  }
+  if(_comp==='spareggio'){
+    var _divL=['Top flight','Seconda divisione','Terza divisione','Quarta divisione'];
+    var _divA='',_divB='';for(var _di=1;_di<=4;_di++){_divA+='<option value="'+_di+'"'+((S.tA.div||1)===_di?' selected':'')+'>Div.'+_di+' — '+_divL[_di-1]+'</option>';_divB+='<option value="'+_di+'"'+((S.tB.div||1)===_di?' selected':'')+'>Div.'+_di+' — '+_divL[_di-1]+'</option>';}
+    h+='<div class="ir"><div class="ig"><label class="il">📊 Divisione '+(S.tA.name||'Casa')+'</label><select onchange="S.tA.div=parseInt(this.value);save()">'+_divA+'</select></div>';
+    h+='<div class="ig"><label class="il">📊 Divisione '+(S.tB.name||'Trasferta')+'</label><select onchange="S.tB.div=parseInt(this.value);save()">'+_divB+'</select></div></div>';
+  }
+  if(_comp==='euro'){
+    var _tiers=[
+      'Tier 1 — Big Five EU (EPL · La Liga · Bundesliga · Serie A · Ligue 1)',
+      'Tier 2 — EU élite (Portugal · Eredivisie · Belgio · Süper Lig · Russia · Scozia · Ucraina)',
+      'Tier 3 — EU media (Austria · Cechia · Grecia · Serbia · Danimarca · Svizzera · Norvegia · Svezia)',
+      'Tier 4 — EU minore (Polonia · Romania · Israele · Croazia · Kazakistan · Georgia · Bulgaria)',
+      'Tier 5 — CONMEBOL élite (Brasile Série A · Argentina Primera · Colombia · Cile · Uruguay)',
+      'Tier 6 — CONMEBOL media/minore (Perù · Ecuador · Venezuela · Paraguay · Bolivia)',
+      'Tier 7 — Asia/MO élite (J1 League · K League · CSL Cina · Saudi Pro · UAE Pro · Indian SL)',
+      'Tier 8 — CONCACAF/Africa/altro (MLS · Liga MX · CAF Champions caliber · resto del mondo)'
+    ];
+    var _TIER_Q_full={1:100,2:68,3:45,4:28,5:58,6:32,7:42,8:22};
+    var _to='',_toB='';for(var _ti=0;_ti<_tiers.length;_ti++){_to+='<option value="'+(_ti+1)+'"'+((S.tA.leagueTier||1)===(_ti+1)?' selected':'')+'>'+_tiers[_ti]+'</option>';_toB+='<option value="'+(_ti+1)+'"'+((S.tB.leagueTier||1)===(_ti+1)?' selected':'')+'>'+_tiers[_ti]+'</option>';}
+    h+='<div class="ir"><div class="ig"><label class="il">🏆 Federazione/Lega '+(S.tA.name||'Casa')+'</label><select onchange="S.tA.leagueTier=parseInt(this.value);save()">'+_to+'</select></div>';
+    h+='<div class="ig"><label class="il">🏆 Federazione/Lega '+(S.tB.name||'Trasferta')+'</label><select onchange="S.tB.leagueTier=parseInt(this.value);save()">'+_toB+'</select></div></div>';
+    h+='<div class="al ai2" style="font-size:10px;margin-top:2px">Gap di tier corregge automaticamente l\'xG (es. Tier1 vs Tier3: +0.28 goal attesi per il Tier1).</div>';
+  }
+  if(_comp==='naz'){
+    var _stages=['Qualificazione','Fase a gironi','Ottavi/Quarti','Semifinale','Finale'];
+    var _stO='';_stages.forEach(function(st,i){_stO+='<option value="'+i+'"'+((S.nazStage||0)===i?' selected':'')+'>'+st+'</option>';});
+    h+='<div class="ir"><div class="ig"><label class="il">🌍 Ranking FIFA '+(S.tA.name||'Casa')+'</label><input type="number" min="1" max="210" value="'+(S.tA.fifaRank||30)+'" style="width:80px" onchange="S.tA.fifaRank=parseInt(this.value)||30;save()"></div>';
+    h+='<div class="ig"><label class="il">🌍 Ranking FIFA '+(S.tB.name||'Trasferta')+'</label><input type="number" min="1" max="210" value="'+(S.tB.fifaRank||50)+'" style="width:80px" onchange="S.tB.fifaRank=parseInt(this.value)||50;save()"></div></div>';
+    h+='<div class="ig"><label class="il">⚽ Fase del torneo</label><select onchange="S.nazStage=parseInt(this.value);save()">'+_stO+'</select></div>';
+    h+='<div class="al ai2" style="font-size:10px;margin-top:2px">Gap FIFA &gt;20 posti → correzione xG. Dalla semifinale in poi il momentum pesa di più.</div>';
+  }
   h+='<button class="btn ba bfu" style="font-size:16px;padding:13px;margin-top:8px" onclick="doAnalyze()">⚡ Analizza</button>';
   h+='<div class="br" style="margin-top:8px">';
   h+='<button class="btn bd bsm" onclick="resetAll()">🗑 Azzera Tutto</button>';
@@ -492,16 +617,36 @@ function renderInput(){
   h+=renderTeamCard('A',hasA);
   h+=renderTeamCard('B',hasB);
 
-  h+='<div class="card"><div class="cl">📊 Classifica (opzionale)</div>';
-  if(stCount){
-    h+='<div class="al ap" style="margin-bottom:8px">✅ '+stCount+' squadre'+(S.tA.pos?' · '+S.tA.name+' #'+S.tA.pos:'')+(S.tB.pos?' · '+S.tB.name+' #'+S.tB.pos:'')+'</div>';
-    h+='<button class="btn bd bsm" style="margin-bottom:8px" onclick="resetStand()">🗑 Azzera Classifica</button>';
+  // Standings — dual for all club competitions; none for naz
+  if(S.tA.comp!=='naz'){
+    var _dualStand=(S.tA.comp==='spareggio'||S.tA.comp==='euro'||S.tA.comp==='coppa');
+    if(_dualStand){
+      var _stConfigs=[
+        {key:'standingsA',tname:S.tA.name||'Squadra Casa',tid:0},
+        {key:'standingsB',tname:S.tB.name||'Squadra Trasferta',tid:1}
+      ];
+      h+='<div class="al ai2" style="font-size:10px;margin-bottom:4px">📌 Se compili solo la classifica di una squadra, verrà usata come riferimento per entrambe.</div>';
+      _stConfigs.forEach(function(cfg){
+        var stObj=S[cfg.key]||{};
+        var stCount=Object.keys(stObj).length;
+        h+='<div class="card"><div class="cl">📊 Classifica '+cfg.tname+'</div>';
+        if(stCount){h+='<div class="al ap" style="margin-bottom:6px">✅ '+stCount+' squadre</div><button class="btn bd bsm" style="margin-bottom:6px" onclick="S[\''+cfg.key+'\']={};save();renderInput()">🗑 Azzera</button>';}
+        h+='<div class="ig"><textarea id="txtStand'+cfg.tid+'" rows="4" placeholder="Incolla classifica '+cfg.tname+'..."></textarea></div>';
+        h+='<div class="br"><button class="btn ba bsm" onclick="importStandFor('+cfg.tid+')">📥 Importa</button></div>';
+        h+='</div>';
+      });
+    } else {
+      var stCount=Object.keys(S.standings).length;
+      h+='<div class="card"><div class="cl">📊 Classifica (opzionale)</div>';
+      if(stCount){h+='<div class="al ap" style="margin-bottom:6px">✅ '+stCount+' squadre'+(S.tA.pos?' · '+S.tA.name+' #'+S.tA.pos:'')+(S.tB.pos?' · '+S.tB.name+' #'+S.tB.pos:'')+' </div><button class="btn bd bsm" style="margin-bottom:6px" onclick="resetStand()">🗑 Azzera</button>';}
+      h+='<div class="al ai2" style="font-size:11px;margin-bottom:8px">Copia il testo della classifica e incollalo qui.</div>';
+      h+='<div class="ig"><textarea id="txtStand" rows="4" placeholder="Incolla il testo della classifica..."></textarea></div>';
+      h+='<div class="br"><button id="standBtn" class="btn ba bsm" onclick="importStand()">📥 Importa Classifica</button></div>';
+      h+='<div id="standErr" style="display:none;margin-top:6px"></div>';
+      h+='</div>';
+    }
   }
-  h+='<div class="al ai2" style="font-size:11px;margin-bottom:8px">Copia il testo della classifica e incollalo qui.<br><strong>Diretta.it:</strong> inizia a copiare dall\' asterisco (*) in alto a sinistra della tabella.<br><strong>SofaScore:</strong> seleziona tutta la tabella → copia → incolla.</div>';
-  h+='<div class="ig"><textarea id="txtStand" rows="4" placeholder="Incolla il testo della classifica..."></textarea></div>';
-  h+='<div class="br"><button id="standBtn" class="btn ba bsm" onclick="importStand()">📥 Importa Classifica</button></div>';
-  h+='<div id="standErr" style="display:none;margin-top:6px"></div>';
-  h+='</div><div style="height:16px"></div>';
+  h+='<div style="height:16px"></div>';
 
   ct.innerHTML=h;
 }
@@ -510,23 +655,26 @@ function renderTeamCard(t,has){
   var team=t==='A'?S.tA:S.tB;
   var lbl=t==='A'?('🏠 '+(team.name||'Squadra Casa')):('✈️ '+(team.name||'Squadra Trasferta'));
   var h='<div class="card"><div class="cl">'+lbl+'</div>';
-  h+='<div class="al ai2" style="font-size:11px;margin-bottom:8px">7 righe per partita: data / comp / sqA / sqB / golA / golB / esito. Nome squadra rilevato automaticamente.</div>';
-  h+='<div class="ig"><textarea id="txt'+t+'" rows="10" placeholder="09/03/2025&#10;SA&#10;Roma&#10;Milan&#10;2&#10;1&#10;V&#10;02/03/2025&#10;SA&#10;Inter&#10;Roma&#10;0&#10;0&#10;P"></textarea></div>';
-  h+='<div class="br"><button class="btn ba bsm" onclick="importTesto(\''+t+'\')">📥 Importa</button>';
-  if(has)h+='<button class="btn bd bsm" onclick="clearTeam(\''+t+'\')">🗑 Azzera</button>';
+  h+='<div class="al ai2" style="font-size:11px;margin-bottom:8px">7 righe per partita: data / comp / sqA / sqB / golA / golB / esito</div>';
+  h+='<div class="ig"><textarea id="txt'+t+'" rows="10" placeholder="09/03/2025&#10;SA&#10;Roma&#10;Milan&#10;2&#10;1&#10;V"></textarea></div>';
+  h+='<div class="br"><button class="btn ba bsm" onclick="importTesto(\''+t+'\')" style="font-family:inherit">📥 Importa</button>';
+  if(has)h+='<button class="btn bd bsm" onclick="clearTeam(\''+t+'\')" style="font-family:inherit">🗑 Azzera</button>';
   h+='</div>';
+  var _isIS=team.inizioStagione||false;
+  h+='<label style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;color:var(--muted);margin-top:8px;padding:7px 10px;background:'+(_isIS?'rgba(245,166,35,.1)':'var(--s2)')+';border-radius:7px;border:1px solid '+(_isIS?'rgba(245,166,35,.4)':'transparent')+'">';
+  h+='<input type="checkbox"'+(_isIS?' checked':'')+' onchange="S.t'+t+'.inizioStagione=this.checked;save();renderInput()" style="width:auto;cursor:pointer">';
+  h+='<span>☀️ <strong>Inizio stagione</strong> — lista dati prevalentemente da amichevoli</span></label>';
   if(has){
-    h+='<div style="margin-top:10px">';
+    h+='<div style="margin-top:8px">';
     for(var i=0;i<team.matches.length;i++){
       var m=team.matches[i];if(!m.avv)continue;
       var e=m.gf>m.gs?'V':m.gf===m.gs?'P':'S';
       var ec=e==='V'?'fv':e==='P'?'fp':'fs';
       var ctC=m.ct==='C'?'color:var(--pos)':'color:var(--blue)';
       var pH=m.posAvv?'<span style="font-size:9px;color:var(--dim)"> #'+m.posAvv+'</span>':'';
-      h+='<div style="display:flex;align-items:center;gap:5px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04)">';
+      h+='<div style="display:flex;align-items:center;gap:5px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.05)">';
       h+='<span class="fd '+ec+'" style="flex-shrink:0">'+e+'</span>';
-      h+='<span style="flex:1;font-weight:600;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0" title="'+m.avv+'">'+m.avv+'</span>';
-      h+=(m.posAvv?'<span style="font-size:9px;background:var(--s3);color:var(--dim);padding:1px 4px;border-radius:4px;flex-shrink:0">#'+m.posAvv+'</span>':'');
+      h+='<span style="flex:1;font-weight:600;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+m.avv+pH+'</span>';
       h+='<span style="font-weight:700;font-size:12px;flex-shrink:0">'+m.gf+'-'+m.gs+'</span>';
       h+='<span style="font-size:10px;font-weight:700;flex-shrink:0;'+ctC+'">'+m.ct+'</span>';
       h+='</div>';
@@ -536,7 +684,22 @@ function renderTeamCard(t,has){
   h+='</div>';
   return h;
 }
-
+function clearTeam(t){
+  if(!confirm('Azzerare i dati di questa squadra?'))return;
+  var team=t==='A'?S.tA:S.tB;
+  team.matches=emptyM();team.pos=0;
+  save();renderInput();
+}
+function resetAll(){
+  if(!confirm('Azzerare tutto?'))return;
+  S=defS();AN=null;save();renderInput();
+}
+function newSeasonTeam(t){
+  if(!confirm('Azzera le partite mantenendo nome e posizione per la nuova stagione?'))return;
+  var team=t==='A'?S.tA:S.tB;
+  team.matches=emptyM();
+  save();renderInput();
+}
 function importTesto(t){
   var el=document.getElementById('txt'+t);
   if(!el||!el.value.trim()){alert('Incolla prima i risultati nel formato 7 righe');return;}
@@ -545,14 +708,46 @@ function importTesto(t){
   var team=t==='A'?S.tA:S.tB;
   if(r.name){team.name=r.name;var inp=document.getElementById('in'+t);if(inp)inp.value=r.name;}
   for(var i=0;i<r.matches.length&&i<8;i++){for(var k in r.matches[i])team.matches[i][k]=r.matches[i][k];}
-  if(Object.keys(S.standings).length){team.matches.forEach(function(m){if(m.avv)m.posAvv=findPos(m.avv,S.standings)||0;});if(!team.pos&&team.name)team.pos=findPos(team.name,S.standings)||0;team.tot=S.tot;}
+  var _sk=t==='A'?'standingsA':'standingsB';
+  var _sfb=t==='A'?'standingsB':'standingsA';
+  var _st=S[_sk]&&Object.keys(S[_sk]).length>2?S[_sk]:(S[_sfb]&&Object.keys(S[_sfb]).length>2?S[_sfb]:S.standings);
+  if(Object.keys(_st).length){
+    team.matches.forEach(function(m){if(m.avv)m.posAvv=findPos(m.avv,_st)||0;});
+    if(!team.pos&&team.name)team.pos=findPos(team.name,_st)||0;
+    team.tot=S.tot;
+  }
   save();el.value='';renderInput();
 }
 
-function clearTeam(t){if(!confirm('Azzerare?'))return;var team=t==='A'?S.tA:S.tB;team.matches=emptyM();team.name='';team.pos=0;save();renderInput();}
-function resetAll(){if(!confirm('Azzerare tutto?'))return;S=defS();AN=null;save();renderInput();}
+function resetFirstLeg(){S.firstLeg={golA:'',golB:''};save();renderInput();}
 function resetStand(){S.standings={};S.tot=20;S.tA.pos=0;S.tB.pos=0;save();renderInput();}
 
+function importStandFor(idx){
+  var key=idx===0?'standingsA':'standingsB';
+  var txt=document.getElementById('txtStand'+idx);
+  if(!txt||!txt.value.trim()){alert('Nessun testo incollato.');return;}
+  var r=parseStandText(txt.value);
+  if(!r||Object.keys(r.standings).length<3){alert('Classifica non riconosciuta.\nAssicurati che il testo contenga posizione e nome squadra.');return;}
+  S[key]=r.standings;
+  S.tot=Math.max(S.tot,r.total||20);
+  // Find team position + retroactively update all posAvv in match history
+  var tKey=idx===0?S.tA:S.tB;
+  var found=findPos(tKey.name,r.standings);
+  if(found){tKey.pos=found;tKey.tot=r.total||20;}
+  // Retroactive posAvv update
+  var otherKey=idx===0?S.tA:S.tB;
+  var allTeams=[S.tA,S.tB];
+  allTeams.forEach(function(team){
+    team.matches.forEach(function(m){
+      if(m.avv){var p=findPos(m.avv,r.standings);if(p)m.posAvv=p;}
+    });
+    if(!team.pos&&team.name){var p2=findPos(team.name,r.standings);if(p2){team.pos=p2;team.tot=r.total||20;}}
+  });
+  save();renderInput();
+  var n=Object.keys(r.standings).length;
+  var msg=n+' squadre importate.'+(found?' '+tKey.name+' trovata: #'+found+'.':' '+tKey.name+' non trovata (inserisci posizione manualmente).');
+  alert(msg);
+}
 async function importStand(){
   var el=document.getElementById('txtStand');
   var errEl=document.getElementById('standErr');
@@ -748,7 +943,8 @@ function renderAnalisi(){
     h+='Momentum: '+(tm.mom>20?'📈':tm.mom<-20?'📉':'➡️')+' '+(tm.mom>0?'+':'')+tm.mom.toFixed(0)+'%';
     if(tm.trend){var tc=tm.trendVal>0.15?'var(--pos)':tm.trendVal<-0.15?'var(--neg)':'var(--muted)';h+=' &nbsp;|&nbsp; Trend 3/8: <span style="color:'+tc+';font-weight:800">'+tm.trend+'</span>';}
     if(tm.pos>0)h+='<br>Classifica: <strong style="color:var(--text)">'+tm.pos+'° su '+tm.tot+'</strong>';
-    h+='</div></div>';
+    h+='</div>';
+    h+='</div>';
   }
   h+='</div></div>';
 
@@ -890,6 +1086,8 @@ function showPrompt(){
 function copyPrompt(){var t=document.getElementById('promptText');if(t&&t.textContent)navigator.clipboard.writeText(t.textContent).then(function(){alert('Copiato!');}).catch(function(){});}
 
 /* STORICO */
+function sortFasciaCol(ci){_stSort.fascia={col:ci,dir:_stSort.fascia.col===ci?_stSort.fascia.dir*-1:-1};renderStorAnalysis();renderStorico();}
+function sortTipoCol(ci){_stSort.tipo={col:ci,dir:_stSort.tipo.col===ci?_stSort.tipo.dir*-1:-1};renderStorAnalysis();renderStorico();}
 // Bet grouping helpers for Storico analysis
 function _getBetSingleGroupKey(pb){
   var cat=pb.cat||'ALTRO';
@@ -954,10 +1152,16 @@ function renderStorAnalysis(){
     h+='<div class="card"><div class="cl">📊 Analisi per Fascia di Quota</div>';
     h+='<table style="width:100%;border-collapse:collapse;font-size:12px">';
     h+='<thead><tr>';
-    ['Fascia','Giocate','Vinte','Strike%','ROI est.'].forEach(function(th){
-      h+='<th style="background:var(--s3);padding:5px 8px;text-align:'+(th==='Fascia'?'left':'center')+';font-size:9px;font-weight:700;text-transform:uppercase;color:var(--muted)">'+th+'</th>';
+    var _fCols=['Fascia','Giocate','Vinte','Strike%','ROI est.'];
+    _fCols.forEach(function(th,ci){
+      var canSort=ci>0;
+      var isAct=_stSort.fascia.col===ci;
+      var arr=isAct?(_stSort.fascia.dir===1?' ↑':' ↓'):'';
+      var oc=canSort?' onclick="sortFasciaCol('+ci+')"':'';
+      h+='<th'+oc+' style="background:var(--s3);padding:5px 8px;text-align:'+(th==='Fascia'?'left':'center')+';font-size:9px;font-weight:700;text-transform:uppercase;color:'+(isAct?'var(--accent)':'var(--muted)')+(canSort?';cursor:pointer':'')+'">'+th+arr+'</th>';
     });
     h+='</tr></thead><tbody>';
+    if(_stSort.fascia.col>0){bandData.sort(function(a,b){var _fcols=[null,function(x){return x.n;},function(x){return x.w;},function(x){return x.n>0?x.w/x.n:0;},function(x){return parseFloat(x.roi)||0;}];var fn=_fcols[_stSort.fascia.col];var va=fn(a),vb=fn(b);return(vb-va)*_stSort.fascia.dir;});}
     bandData.forEach(function(b){
       var sr=b.n>0?(b.w/b.n*100).toFixed(0)+'%':'—';
       var bRoi=b.roi;
@@ -1004,10 +1208,15 @@ function renderStorAnalysis(){
     h+='<div style="font-size:11px;color:var(--muted);margin-bottom:8px">Basato su testo inserito nel campo Scommessa. Categorizzazione automatica.</div>';
     h+='<table style="width:100%;border-collapse:collapse;font-size:12px">';
     h+='<thead><tr>';
-    ['Mercato','N','✅','SR%','ROI%'].forEach(function(th){
-      h+='<th style="background:var(--s3);padding:5px 8px;text-align:'+(th==='Mercato'?'left':'center')+';font-size:9px;font-weight:700;text-transform:uppercase;color:var(--muted)">'+th+'</th>';
+    ['Mercato','N','✅','SR%','ROI%'].forEach(function(th,ci){
+      var canSort=ci>0;
+      var isAct=_stSort.tipo.col===ci;
+      var arr=isAct?(_stSort.tipo.dir===1?' ↑':' ↓'):'';
+      var oc=canSort?' onclick="sortTipoCol('+ci+')"':'';
+      h+='<th'+oc+' style="background:var(--s3);padding:5px 8px;text-align:'+(th==='Mercato'?'left':'center')+';font-size:9px;font-weight:700;text-transform:uppercase;color:'+(isAct?'var(--accent)':'var(--muted)')+(canSort?';cursor:pointer':'')+'">'+th+arr+'</th>';
     });
     h+='</tr></thead><tbody>';
+    if(_stSort.tipo.col>0){mkArr.sort(function(a,b){var _tcols=[null,function(x){return x.n;},function(x){return x.w;},function(x){return x.n>0?x.w/x.n:0;},function(x){return x.n>0?x.p/x.n:0;}];var fn=_tcols[_stSort.tipo.col];var va=fn(a),vb=fn(b);return(vb-va)*_stSort.tipo.dir;});}
     mkArr.forEach(function(m){
       var sr=m.n>0?(m.w/m.n*100).toFixed(0)+'%':'—';
       var srC=m.n>0&&m.w/m.n>=0.55?'var(--pos)':m.n>0&&m.w/m.n>=0.4?'var(--accent)':'var(--neg)';
@@ -1062,11 +1271,7 @@ function renderStorAnalysis(){
     if(recentW>=4)insights.push('🔥 Periodo positivo: '+recentW+'/5 nelle ultime 5 chiuse.');
     else if(recentW<=1)insights.push('⚠️ Periodo difficile: '+recentW+'/5 ultime. Considera puntate ridotte.');
   }
-  if(insights.length){
-    h+='<div class="card"><div class="cl">💡 Spunti dal tuo Storico</div>';
-    insights.forEach(function(ins){h+='<div style="padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px;line-height:1.5">'+ins+'</div>';});
-    h+='</div>';
-  }
+  // === SPUNTI E CONSIDERAZIONI (Enhanced) ===
 
   return h;
 }
@@ -1289,7 +1494,18 @@ function renderStorico(){
     h+=renderStorAnalysis();
     h+='<div class="br" style="margin-bottom:10px"><button class="btn bg2 bsm" onclick="expSt()">📤 Esporta</button><button class="btn bg2 bsm" onclick="document.getElementById(\'impStF\').click()">📥 Importa</button><button class="btn bd bsm" onclick="clearSt()">🗑</button></div>';
     h+='<input type="file" id="impStF" accept=".json" style="display:none" onchange="impSt(event)">';
-    for(var idx=0;idx<STOR.length;idx++){
+    // Filter + collapse controls
+    var _fCounts={all:STOR.length,V:0,P:0,N:0};
+    STOR.forEach(function(s){if(s.esito==='V')_fCounts.V++;else if(s.esito==='P')_fCounts.P++;else _fCounts.N++;});
+    h+='<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap">';
+    h+='<span style="font-size:12px;font-weight:600;color:var(--muted)">Mostra:</span>';
+    var _fDefs=[['all','Tutte',_fCounts.all,'var(--text)'],['V','✅',_fCounts.V,'var(--pos)'],['P','❌',_fCounts.P,'var(--neg)'],['N','⏳',_fCounts.N,'var(--muted)']];
+    _fDefs.forEach(function(fd){var isAct=_storFilt===fd[0];h+='<button onclick="_storFilt=\''+fd[0]+'\';renderStorico()" style="padding:3px 8px;font-size:11px;font-weight:'+(isAct?'600':'400')+';border-radius:5px;border:1px solid '+(isAct?fd[3]:'var(--border)')+';background:'+(isAct?'rgba(255,255,255,.06)':'transparent')+';color:'+(isAct?fd[3]:'var(--dim)')+';cursor:pointer;font-family:inherit">'+fd[1]+(fd[2]?' '+fd[2]:'')+'</button>';});
+    h+='<button onclick="_storListOpen=!_storListOpen;renderStorico()" style="margin-left:auto;padding:4px 10px;font-size:11px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer">'+(_storListOpen?'▲ Riduci':'▼ Espandi')+'</button>';
+    h+='</div>';
+    var _dispList=STOR.filter(function(s,_si){s._origIdx=_si;return _storFilt==='all'||(_storFilt==='V'&&s.esito==='V')||(_storFilt==='P'&&s.esito==='P')||(_storFilt==='N'&&s.esito!=='V'&&s.esito!=='P');});
+    if(!_storListOpen)h+='<div style="text-align:center;padding:8px;color:var(--muted);font-size:12px">▼ '+_dispList.length+' partite — clicca Espandi per vedere</div>';
+    if(_storListOpen) for(var _dii=0;_dii<_dispList.length;_dii++){var idx=_dispList[_dii]._origIdx;
       var s=STOR[idx];
       var eC=s.esito==='V'?'hV':s.esito==='P'?'hP':'hN';
       var eT=s.esito==='V'?'✓':s.esito==='P'?'✗':'?';
