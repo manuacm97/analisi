@@ -108,11 +108,116 @@ try{var _lk=['as_v4','as_v3','asv13'];_lk.forEach(function(k){if(localStorage.ge
 var COMPS=[{id:'camp',l:'Campionato',d:'Forma 30% · Posizione 25% · Attacco 20% · Difesa 15% · Momentum 10%'},{id:'coppa',l:'Coppa Nazionale',d:'Forma 40% · Attacco 25% · Difesa 15% · Momentum 15% — Campo neutro disponibile'},{id:'spareggio',l:'Spareggio (prom./retr.)',d:'Considera divisioni diverse e classifica — alta posta in gioco'},{id:'euro',l:'Competizioni Europee/Internazionali Club',d:'Qualità federazione pesa sulla performance — no bonus posizione campionato — Campo neutro disponibile'},{id:'naz',l:'Nazionale (qual. · tornei)',d:'Ranking FIFA + qualità federazione — no dato club — adatto a qualificazioni ed europei/mondiali'}];
 var WW={camp:{f:.30,p:.25,a:.20,d:.15,m:.10},coppa:{f:.40,p:.05,a:.25,d:.15,m:.15},spareggio:{f:.28,p:.12,a:.22,d:.20,m:.18},euro:{f:.35,p:0,a:.25,d:.20,m:.20},naz:{f:.30,p:0,a:.25,d:.25,m:.20}};
 function emptyM(){var r=[];for(var i=0;i<8;i++)r.push({avv:'',gf:0,gs:0,ct:'C',posAvv:0});return r;}
+// All markets with probability functions and hit functions for combo calc
+var EXTRA_MKTS=[
+  // === Over / Under ===
+  {id:'over15',l:'Over 1.5',cat:'Over 1.5',pv:function(d){return 100-calcRange(d.xA,d.xB,0,1);},hit:function(a,b){return a+b>=2;}},
+  {id:'over25',l:'Over 2.5',cat:'Over 2.5',pv:function(d){return 100-calcRange(d.xA,d.xB,0,2);},hit:function(a,b){return a+b>=3;}},
+  {id:'over35',l:'Over 3.5',cat:'Over 3.5',pv:function(d){return 100-calcRange(d.xA,d.xB,0,3);},hit:function(a,b){return a+b>=4;}},
+  {id:'over45',l:'Over 4.5',cat:'Over 4.5',pv:function(d){return 100-calcRange(d.xA,d.xB,0,4);},hit:function(a,b){return a+b>=5;}},
+  {id:'under15',l:'Under 1.5',cat:'Under 1.5',pv:function(d){return calcRange(d.xA,d.xB,0,1);},hit:function(a,b){return a+b<=1;}},
+  {id:'under25',l:'Under 2.5',cat:'Under 2.5',pv:function(d){return calcRange(d.xA,d.xB,0,2);},hit:function(a,b){return a+b<=2;}},
+  {id:'under35',l:'Under 3.5',cat:'Under 3.5',pv:function(d){return calcRange(d.xA,d.xB,0,3);},hit:function(a,b){return a+b<=3;}},
+  {id:'under45',l:'Under 4.5',cat:'Under 4.5',pv:function(d){return calcRange(d.xA,d.xB,0,4);},hit:function(a,b){return a+b<=4;}},
+  // === Doppia Chance extra ===
+  {id:'dc12',l:'DC 1-2 (no X)',cat:'DC12',pv:function(d){return d.probs.p1+d.probs.p2;},hit:function(a,b){return a!==b;}},
+  // === Handicap ===
+  {id:'hcp_m25',l:'HCP Casa -2.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gA-gB>2.5)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return a-b>2.5;}},
+  {id:'hcp_m2',l:'HCP Casa -2',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gA-gB>2)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return a-b>2;}},
+  {id:'hcp_m15',l:'HCP Casa -1.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gA-gB>1.5)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return a-b>1.5;}},
+  {id:'hcp_m1',l:'HCP Casa -1',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gA-gB>1)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return a-b>1;}},
+  {id:'hcp_m05',l:'HCP Casa -0.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gA>gB)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return a>b;}},
+  {id:'hcp_p05',l:'HCP Ospite +0.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gB>gA)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return b>a;}},
+  {id:'hcp_p1',l:'HCP Ospite +1',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gB-gA>1)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return b-a>1;}},
+  {id:'hcp_p15',l:'HCP Ospite +1.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gB-gA>1.5)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return b-a>1.5;}},
+  {id:'hcp_p2',l:'HCP Ospite +2',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gB-gA>2)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return b-a>2;}},
+  {id:'hcp_p25',l:'HCP Ospite +2.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gB-gA>2.5)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return b-a>2.5;}},
+  // === Casa [A] — stesse range dell'analisi ===
+  {id:'mga_0_0',l:'[A] 0 Gol',cat:'MG_A',pv:function(d){var p=0;for(var k=0;k<=0;k++)p+=poisson(d.xA,k);return p*100;},hit:function(a,b){return a>=0&&a<=0;}},
+  {id:'mga_0_1',l:'[A] 0-1 Gol',cat:'MG_A',pv:function(d){var p=0;for(var k=0;k<=1;k++)p+=poisson(d.xA,k);return p*100;},hit:function(a,b){return a>=0&&a<=1;}},
+  {id:'mga_1_2',l:'[A] 1-2 Gol',cat:'MG_A',pv:function(d){var p=0;for(var k=1;k<=2;k++)p+=poisson(d.xA,k);return p*100;},hit:function(a,b){return a>=1&&a<=2;}},
+  {id:'mga_1_3',l:'[A] 1-3 Gol',cat:'MG_A',pv:function(d){var p=0;for(var k=1;k<=3;k++)p+=poisson(d.xA,k);return p*100;},hit:function(a,b){return a>=1&&a<=3;}},
+  {id:'mga_1_4',l:'[A] 1-4 Gol',cat:'MG_A',pv:function(d){var p=0;for(var k=1;k<=4;k++)p+=poisson(d.xA,k);return p*100;},hit:function(a,b){return a>=1&&a<=4;}},
+  {id:'mga_1_5',l:'[A] 1-5 Gol',cat:'MG_A',pv:function(d){var p=0;for(var k=1;k<=5;k++)p+=poisson(d.xA,k);return p*100;},hit:function(a,b){return a>=1&&a<=5;}},
+  {id:'mga_1_6',l:'[A] 1-6 Gol',cat:'MG_A',pv:function(d){var p=0;for(var k=1;k<=6;k++)p+=poisson(d.xA,k);return p*100;},hit:function(a,b){return a>=1&&a<=6;}},
+  {id:'mga_2_3',l:'[A] 2-3 Gol',cat:'MG_A',pv:function(d){var p=0;for(var k=2;k<=3;k++)p+=poisson(d.xA,k);return p*100;},hit:function(a,b){return a>=2&&a<=3;}},
+  {id:'mga_2_4',l:'[A] 2-4 Gol',cat:'MG_A',pv:function(d){var p=0;for(var k=2;k<=4;k++)p+=poisson(d.xA,k);return p*100;},hit:function(a,b){return a>=2&&a<=4;}},
+  {id:'mga_2_5',l:'[A] 2-5 Gol',cat:'MG_A',pv:function(d){var p=0;for(var k=2;k<=5;k++)p+=poisson(d.xA,k);return p*100;},hit:function(a,b){return a>=2&&a<=5;}},
+  {id:'mga_2_6',l:'[A] 2-6 Gol',cat:'MG_A',pv:function(d){var p=0;for(var k=2;k<=6;k++)p+=poisson(d.xA,k);return p*100;},hit:function(a,b){return a>=2&&a<=6;}},
+  {id:'mga_3_4',l:'[A] 3-4 Gol',cat:'MG_A',pv:function(d){var p=0;for(var k=3;k<=4;k++)p+=poisson(d.xA,k);return p*100;},hit:function(a,b){return a>=3&&a<=4;}},
+  {id:'mga_3_5',l:'[A] 3-5 Gol',cat:'MG_A',pv:function(d){var p=0;for(var k=3;k<=5;k++)p+=poisson(d.xA,k);return p*100;},hit:function(a,b){return a>=3&&a<=5;}},
+  {id:'mga_3_6',l:'[A] 3-6 Gol',cat:'MG_A',pv:function(d){var p=0;for(var k=3;k<=6;k++)p+=poisson(d.xA,k);return p*100;},hit:function(a,b){return a>=3&&a<=6;}},
+  {id:'mga_4_5',l:'[A] 4-5 Gol',cat:'MG_A',pv:function(d){var p=0;for(var k=4;k<=5;k++)p+=poisson(d.xA,k);return p*100;},hit:function(a,b){return a>=4&&a<=5;}},
+  {id:'mga_4_6',l:'[A] 4-6 Gol',cat:'MG_A',pv:function(d){var p=0;for(var k=4;k<=6;k++)p+=poisson(d.xA,k);return p*100;},hit:function(a,b){return a>=4&&a<=6;}},
+  {id:'mga_5_6',l:'[A] 5-6 Gol',cat:'MG_A',pv:function(d){var p=0;for(var k=5;k<=6;k++)p+=poisson(d.xA,k);return p*100;},hit:function(a,b){return a>=5&&a<=6;}},
+  {id:'mga_7p',l:'[A] 7+ Gol',cat:'MG_A',pv:function(d){var p=0;for(var k=0;k<=6;k++)p+=poisson(d.xA,k);return Math.max(0,(1-p)*100);},hit:function(a,b){return a>=7;}},
+  // === Ospite [B] — stesse range dell'analisi ===
+  {id:'mgb_0_0',l:'[B] 0 Gol',cat:'MG_B',pv:function(d){var p=0;for(var k=0;k<=0;k++)p+=poisson(d.xB,k);return p*100;},hit:function(a,b){return b>=0&&b<=0;}},
+  {id:'mgb_0_1',l:'[B] 0-1 Gol',cat:'MG_B',pv:function(d){var p=0;for(var k=0;k<=1;k++)p+=poisson(d.xB,k);return p*100;},hit:function(a,b){return b>=0&&b<=1;}},
+  {id:'mgb_1_2',l:'[B] 1-2 Gol',cat:'MG_B',pv:function(d){var p=0;for(var k=1;k<=2;k++)p+=poisson(d.xB,k);return p*100;},hit:function(a,b){return b>=1&&b<=2;}},
+  {id:'mgb_1_3',l:'[B] 1-3 Gol',cat:'MG_B',pv:function(d){var p=0;for(var k=1;k<=3;k++)p+=poisson(d.xB,k);return p*100;},hit:function(a,b){return b>=1&&b<=3;}},
+  {id:'mgb_1_4',l:'[B] 1-4 Gol',cat:'MG_B',pv:function(d){var p=0;for(var k=1;k<=4;k++)p+=poisson(d.xB,k);return p*100;},hit:function(a,b){return b>=1&&b<=4;}},
+  {id:'mgb_1_5',l:'[B] 1-5 Gol',cat:'MG_B',pv:function(d){var p=0;for(var k=1;k<=5;k++)p+=poisson(d.xB,k);return p*100;},hit:function(a,b){return b>=1&&b<=5;}},
+  {id:'mgb_1_6',l:'[B] 1-6 Gol',cat:'MG_B',pv:function(d){var p=0;for(var k=1;k<=6;k++)p+=poisson(d.xB,k);return p*100;},hit:function(a,b){return b>=1&&b<=6;}},
+  {id:'mgb_2_3',l:'[B] 2-3 Gol',cat:'MG_B',pv:function(d){var p=0;for(var k=2;k<=3;k++)p+=poisson(d.xB,k);return p*100;},hit:function(a,b){return b>=2&&b<=3;}},
+  {id:'mgb_2_4',l:'[B] 2-4 Gol',cat:'MG_B',pv:function(d){var p=0;for(var k=2;k<=4;k++)p+=poisson(d.xB,k);return p*100;},hit:function(a,b){return b>=2&&b<=4;}},
+  {id:'mgb_2_5',l:'[B] 2-5 Gol',cat:'MG_B',pv:function(d){var p=0;for(var k=2;k<=5;k++)p+=poisson(d.xB,k);return p*100;},hit:function(a,b){return b>=2&&b<=5;}},
+  {id:'mgb_2_6',l:'[B] 2-6 Gol',cat:'MG_B',pv:function(d){var p=0;for(var k=2;k<=6;k++)p+=poisson(d.xB,k);return p*100;},hit:function(a,b){return b>=2&&b<=6;}},
+  {id:'mgb_3_4',l:'[B] 3-4 Gol',cat:'MG_B',pv:function(d){var p=0;for(var k=3;k<=4;k++)p+=poisson(d.xB,k);return p*100;},hit:function(a,b){return b>=3&&b<=4;}},
+  {id:'mgb_3_5',l:'[B] 3-5 Gol',cat:'MG_B',pv:function(d){var p=0;for(var k=3;k<=5;k++)p+=poisson(d.xB,k);return p*100;},hit:function(a,b){return b>=3&&b<=5;}},
+  {id:'mgb_3_6',l:'[B] 3-6 Gol',cat:'MG_B',pv:function(d){var p=0;for(var k=3;k<=6;k++)p+=poisson(d.xB,k);return p*100;},hit:function(a,b){return b>=3&&b<=6;}},
+  {id:'mgb_4_5',l:'[B] 4-5 Gol',cat:'MG_B',pv:function(d){var p=0;for(var k=4;k<=5;k++)p+=poisson(d.xB,k);return p*100;},hit:function(a,b){return b>=4&&b<=5;}},
+  {id:'mgb_4_6',l:'[B] 4-6 Gol',cat:'MG_B',pv:function(d){var p=0;for(var k=4;k<=6;k++)p+=poisson(d.xB,k);return p*100;},hit:function(a,b){return b>=4&&b<=6;}},
+  {id:'mgb_5_6',l:'[B] 5-6 Gol',cat:'MG_B',pv:function(d){var p=0;for(var k=5;k<=6;k++)p+=poisson(d.xB,k);return p*100;},hit:function(a,b){return b>=5&&b<=6;}},
+  {id:'mgb_7p',l:'[B] 7+ Gol',cat:'MG_B',pv:function(d){var p=0;for(var k=0;k<=6;k++)p+=poisson(d.xB,k);return Math.max(0,(1-p)*100);},hit:function(a,b){return b>=7;}},
+  // === Multigol Totale — stesse range dell'analisi ===
+  {id:'mg_0_0',l:'MG 0 Gol',cat:'MG 0 Gol',pv:function(d){return calcRange(d.xA,d.xB,0,0);},hit:function(a,b){return a+b>=0&&a+b<=0;}},
+  {id:'mg_0_1',l:'MG 0-1',cat:'MG 0-1',pv:function(d){return calcRange(d.xA,d.xB,0,1);},hit:function(a,b){return a+b>=0&&a+b<=1;}},
+  {id:'mg_1_2',l:'MG 1-2',cat:'MG 1-2',pv:function(d){return calcRange(d.xA,d.xB,1,2);},hit:function(a,b){return a+b>=1&&a+b<=2;}},
+  {id:'mg_1_3',l:'MG 1-3',cat:'MG 1-3',pv:function(d){return calcRange(d.xA,d.xB,1,3);},hit:function(a,b){return a+b>=1&&a+b<=3;}},
+  {id:'mg_1_4',l:'MG 1-4',cat:'MG 1-4',pv:function(d){return calcRange(d.xA,d.xB,1,4);},hit:function(a,b){return a+b>=1&&a+b<=4;}},
+  {id:'mg_1_5',l:'MG 1-5',cat:'MG 1-5',pv:function(d){return calcRange(d.xA,d.xB,1,5);},hit:function(a,b){return a+b>=1&&a+b<=5;}},
+  {id:'mg_1_6',l:'MG 1-6',cat:'MG 1-6',pv:function(d){return calcRange(d.xA,d.xB,1,6);},hit:function(a,b){return a+b>=1&&a+b<=6;}},
+  {id:'mg_2_3',l:'MG 2-3',cat:'MG 2-3',pv:function(d){return calcRange(d.xA,d.xB,2,3);},hit:function(a,b){return a+b>=2&&a+b<=3;}},
+  {id:'mg_2_4',l:'MG 2-4',cat:'MG 2-4',pv:function(d){return calcRange(d.xA,d.xB,2,4);},hit:function(a,b){return a+b>=2&&a+b<=4;}},
+  {id:'mg_2_5',l:'MG 2-5',cat:'MG 2-5',pv:function(d){return calcRange(d.xA,d.xB,2,5);},hit:function(a,b){return a+b>=2&&a+b<=5;}},
+  {id:'mg_2_6',l:'MG 2-6',cat:'MG 2-6',pv:function(d){return calcRange(d.xA,d.xB,2,6);},hit:function(a,b){return a+b>=2&&a+b<=6;}},
+  {id:'mg_3_4',l:'MG 3-4',cat:'MG 3-4',pv:function(d){return calcRange(d.xA,d.xB,3,4);},hit:function(a,b){return a+b>=3&&a+b<=4;}},
+  {id:'mg_3_5',l:'MG 3-5',cat:'MG 3-5',pv:function(d){return calcRange(d.xA,d.xB,3,5);},hit:function(a,b){return a+b>=3&&a+b<=5;}},
+  {id:'mg_3_6',l:'MG 3-6',cat:'MG 3-6',pv:function(d){return calcRange(d.xA,d.xB,3,6);},hit:function(a,b){return a+b>=3&&a+b<=6;}},
+  {id:'mg_4_5',l:'MG 4-5',cat:'MG 4-5',pv:function(d){return calcRange(d.xA,d.xB,4,5);},hit:function(a,b){return a+b>=4&&a+b<=5;}},
+  {id:'mg_4_6',l:'MG 4-6',cat:'MG 4-6',pv:function(d){return calcRange(d.xA,d.xB,4,6);},hit:function(a,b){return a+b>=4&&a+b<=6;}},
+  {id:'mg_5_6',l:'MG 5-6',cat:'MG 5-6',pv:function(d){return calcRange(d.xA,d.xB,5,6);},hit:function(a,b){return a+b>=5&&a+b<=6;}},
+  {id:'mg_7p',l:'MG 7+',cat:'MG 7+',pv:function(d){return Math.max(0,100-calcRange(d.xA,d.xB,0,6));},hit:function(a,b){return a+b>=7;}}
+];
+// Preset market hit functions for combo calc
+var PRESET_HITS={
+  '1':function(a,b){return a>b;},'X':function(a,b){return a===b;},'2':function(a,b){return b>a;},
+  'over25':function(a,b){return a+b>=3;},'under25':function(a,b){return a+b<=2;},
+  'btts':function(a,b){return a>0&&b>0;},'noG':function(a,b){return a===0||b===0;},
+  '1X':function(a,b){return a>=b;},'X2':function(a,b){return b>=a;}
+};
+function getHitFn(id){
+  if(PRESET_HITS[id])return PRESET_HITS[id];
+  for(var _i=0;_i<EXTRA_MKTS.length;_i++){if(EXTRA_MKTS[_i].id===id)return EXTRA_MKTS[_i].hit||null;}
+  return null;
+}
+function computeComboProb(ids,d){
+  var fns=ids.map(function(id){return getHitFn(id);}).filter(Boolean);
+  if(fns.length===0)return 0;
+  var p=0;
+  for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++){
+    if(fns.every(function(fn){return fn(gA,gB);}))
+      p+=poisson(d.xA,gA)*poisson(d.xB,gB);
+  }
+  return p*100;
+}
+var _evSectionOpen=false;
 var _stSort={fascia:{col:-1,dir:1},tipo:{col:-1,dir:1}};
 var _spuntiOpen=true;
 var _storFilt='all';
 var _storListOpen=true;
-function defS(){return{tA:{name:'',pos:0,tot:20,div:1,leagueTier:1,fifaRank:30,comp:'camp',inizioStagione:false,matches:emptyM()},tB:{name:'',pos:0,tot:20,div:1,leagueTier:1,fifaRank:50,comp:'camp',inizioStagione:false,matches:emptyM()},standings:{},standingsA:{},standingsB:{},tot:20,neutral:false,nazStage:0,firstLeg:{golA:'',golB:''}};}
+function defS(){return{tA:{name:'',pos:0,tot:20,div:1,leagueTier:1,fifaRank:30,comp:'camp',inizioStagione:false,matches:emptyM()},tB:{name:'',pos:0,tot:20,div:1,leagueTier:1,fifaRank:50,comp:'camp',inizioStagione:false,matches:emptyM()},standings:{},standingsA:{},standingsB:{},tot:20,neutral:false,nazStage:0,firstLeg:{golA:'',golB:''},customEvMkts:[],customEvCombos:[]};}
 var S=defS(),AN=null,STOR=[];
 var AT='input';
 function load(){
@@ -514,7 +619,27 @@ function runAnalysis(){
   mg.push({r:'0-1',l:'0-1 Gol',p:calcRange(xA,xB,0,1)});
   for(var i=0;i<mgRanges.length;i++)mg.push({r:mgRanges[i][0]+'-'+mgRanges[i][1],p:calcRange(xA,xB,mgRanges[i][0],mgRanges[i][1])});
   mg.push({r:'7+',l:'7+ Gol',p:Math.max(0,100-calcRange(xA,xB,0,6))});
-  var tgA05=(1-poisson(xA,0))*100,tgA15=(1-poisson(xA,0)-poisson(xA,1))*100;
+  // Per-team multigol ranges (for analysis)
+  function _ptRange(x,lo,hi){
+    var p=0;for(var _k=lo;_k<=Math.min(hi,9);_k++)p+=poisson(x,_k);return p*100;
+  }
+  function _buildTeamMg(x){
+    return[
+      {r:'0',l:'0 Gol',p:poisson(x,0)*100},
+      {r:'1',l:'1 Gol',p:poisson(x,1)*100},
+      {r:'2',l:'2 Gol',p:poisson(x,2)*100},
+      {r:'3+',l:'3+ Gol',p:Math.max(0,100-(poisson(x,0)+poisson(x,1)+poisson(x,2))*100)},
+      {r:'0-1',p:_ptRange(x,0,1)},
+      {r:'0-2',p:_ptRange(x,0,2)},
+      {r:'1-2',p:_ptRange(x,1,2)},
+      {r:'1-3',p:_ptRange(x,1,3)},
+      {r:'1-4',p:_ptRange(x,1,4)},
+      {r:'2-3',p:_ptRange(x,2,3)},
+      {r:'2-4',p:_ptRange(x,2,4)}
+    ];
+  }
+  var mgA=_buildTeamMg(xA);
+  var mgB=_buildTeamMg(xB);
   var tgB05=(1-poisson(xB,0))*100,tgB15=(1-poisson(xB,0)-poisson(xB,1))*100;
   var now=new Date();
   var ts=now.toLocaleString('it-IT',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
@@ -522,7 +647,7 @@ function runAnalysis(){
   var regWarnA=a.agf>2.8||a.agf<0.4||a.ags>2.8;
   var regWarnB=b.agf>2.8||b.agf<0.4||b.ags>2.8;
   var regWarn=regWarnA||regWarnB;
-  AN={nA:nA,nB:nB,a:a,b:b,regWarn:regWarn,regWarnA:regWarnA,regWarnB:regWarnB,xA:xA,xB:xB,probs:probs,goals:goals,o25b:o25b,bttsb:bttsb,dc1X:dc1X,dcX2:dcX2,cM:cM,cL:cL,mO:mO,mP:mP.toFixed(0),mQ:(100/mP).toFixed(2),cs:cs,mg:mg,tgA05:tgA05,tgA15:tgA15,tgB05:tgB05,tgB15:tgB15,comp:S.tA.comp,ts:ts};
+  AN={mgA:mgA,mgB:mgB,nA:nA,nB:nB,a:a,b:b,regWarn:regWarn,regWarnA:regWarnA,regWarnB:regWarnB,xA:xA,xB:xB,probs:probs,goals:goals,o25b:o25b,bttsb:bttsb,dc1X:dc1X,dcX2:dcX2,cM:cM,cL:cL,mO:mO,mP:mP.toFixed(0),mQ:(100/mP).toFixed(2),cs:cs,mg:mg,tgA05:tgA05,tgA15:tgA15,tgB05:tgB05,tgB15:tgB15,comp:S.tA.comp,ts:ts};
   save();go('analisi');
 }
 
@@ -830,6 +955,20 @@ function renderAnalisi(){
   var totXG=d.xA+d.xB;
   var Asgn=0,Bsgn=0;for(var i=0;i<d.a.gf.length;i++){if(d.a.gf[i]>0)Asgn++;if(d.b.gf[i]>0)Bsgn++;}
   var h='<div class="stit">'+d.nA+' <span style="color:var(--muted);font-size:14px;font-weight:500">vs</span> '+d.nB+'</div>';
+  // Risultato at top (only when loaded from storico)
+  if(_rParsed){
+    var _rLabel=_rER==='1'?'Vittoria '+d.nA:_rER==='2'?'Vittoria '+d.nB:'Pareggio';
+    var _rIcon=_rER==='1'?'🏠':_rER==='2'?'✈️':'🤝';
+    var _betsBanner=_userBets.length?_userBets.map(function(b){var pb=parseBet(b);return '<span style="font-size:11px;padding:2px 7px;border-radius:4px;background:'+pb.bg+';color:'+pb.col+'">'+pb.label+'</span>';}).join(' '):'<span style="color:var(--dim);font-size:11px">nessuna scommessa</span>';
+    var _esitoClr=d._esitoFin==='V'?'var(--pos)':d._esitoFin==='P'?'var(--neg)':'var(--dim)';
+    var _esitoLbl=d._esitoFin==='V'?'✅ VINTA':d._esitoFin==='P'?'❌ PERSA':'⏳ APERTA';
+    h+='<div style="background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;gap:12px">';
+    h+='<div style="font-size:38px;font-weight:900;color:var(--text);flex-shrink:0;letter-spacing:-2px">'+_rGolA+'–'+_rGolB+'</div>';
+    h+='<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700">'+_rIcon+' '+_rLabel+'</div>';
+    h+='<div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:4px">'+_betsBanner+'</div></div>';
+    h+='<div style="font-size:12px;font-weight:900;color:'+_esitoClr+';flex-shrink:0;text-align:center">'+_esitoLbl+'</div>';
+    h+='</div>';
+  }
 
   h+='<div class="card"><div class="pred"><div class="prl">Esito più probabile</div><div class="prv">'+d.mO+'</div>';
   h+='<div class="prp" style="color:'+pc(parseFloat(d.mP))+'">'+d.mP+'%</div>';
@@ -896,10 +1035,48 @@ function renderAnalisi(){
     h+='<div class="mgl">'+(mgE.l||mgE.r)+_mgBadge+'</div>';
     h+='<div class="mgv" style="color:'+c2+'">'+f1(mgE.p)+'%</div></div>';
   }
-  h+='</div><div class="sec">Gol per Squadra</div><div class="g2">';
-  var tgD=[[d.nA+' Over 0.5',d.tgA05],[d.nA+' Over 1.5',d.tgA15],[d.nB+' Over 0.5',d.tgB05],[d.nB+' Over 1.5',d.tgB15]];
-  for(var i=0;i<tgD.length;i++){var g=tgD[i],c2=pc(g[1]);h+='<div class="st"><div class="sl">'+g[0]+'</div><div class="sv" style="color:'+c2+'">'+f1(g[1])+'%</div></div>';}
   h+='</div></div>';
+  // Per-team multigol — same ranges as multigol totale, computed from xA/xB
+  (function(){
+    var _ptRanges=[[0,0,'0 Gol'],[0,1,'0-1 Gol']];
+    var _mgR=[[1,2],[1,3],[1,4],[1,5],[1,6],[2,3],[2,4],[2,5],[2,6],[3,4],[3,5],[3,6],[4,5],[4,6],[5,6]];
+    for(var _ri=0;_ri<_mgR.length;_ri++)_ptRanges.push([_mgR[_ri][0],_mgR[_ri][1],_mgR[_ri][0]+'-'+_mgR[_ri][1]]);
+    function _buildPT(x){
+      var p0=poisson(x,0),p1=poisson(x,1),p2=poisson(x,2),p3=poisson(x,3),p4=poisson(x,4),p5=poisson(x,5),p6=poisson(x,6);
+      var _pMap={0:p0,1:p1,2:p2,3:p3,4:p4,5:p5,6:p6};
+      return _ptRanges.map(function(rr){
+        var lo=rr[0],hi=rr[1],lbl=rr[2],p=0;
+        for(var k=lo;k<=Math.min(hi,6);k++)p+=(_pMap[k]||0);
+        return{r:lo+'-'+hi,l:lbl,p:p*100};
+      }).concat([{r:'7+',l:'7+ Gol',p:Math.max(0,100-(p0+p1+p2+p3+p4+p5+p6)*100)}]);
+    }
+    var _mgApt=d.mgA||_buildPT(d.xA);
+    var _mgBpt=d.mgB||_buildPT(d.xB);
+    h+='<div class="card"><div class="cl">⚽ Multigol per Squadra</div>';
+    [[_mgApt,d.nA,_rGolA],[_mgBpt,d.nB,_rGolB]].forEach(function(pair){
+      var tmg=pair[0],tn=pair[1],_ptGoals=pair[2];
+      var _vis=tmg.filter(function(m){return m.p>=40;});
+      if(!_vis.length)return;
+      h+='<div class="sec" style="font-size:10px">'+tn+'</div>';
+      h+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin-bottom:4px">';
+      for(var _pi=0;_pi<_vis.length;_pi++){
+        var _pm=_vis[_pi],_pc=pc(_pm.p);
+        // Highlight if result matches this range
+        var _ptHit=_rParsed&&_ptGoals!==null&&(function(){
+          var r=_pm.r,parts=r.split('-');
+          if(r==='7+')return _ptGoals>=7;
+          if(parts.length===2){var lo=parseInt(parts[0]),hi=parseInt(parts[1]);return _ptGoals>=lo&&_ptGoals<=hi;}
+          return false;
+        })();
+        var _ptStyle=_ptHit?'background:rgba(62,207,142,.18);border:1.5px solid var(--pos)':'border:1px solid transparent';
+        h+='<div class="mgc" style="padding:3px 2px;'+_ptStyle+'">';
+        if(_ptHit)h+='<div style="font-size:7px;color:var(--pos);text-align:right">✓</div>';
+        h+='<div class="mgl" style="font-size:8px">'+(_pm.l||_pm.r)+'</div><div class="mgv" style="font-size:11px;color:'+_pc+'">'+f1(_pm.p)+'%</div></div>';
+      }
+      h+='</div>';
+    });
+    h+='</div>';
+  })();
 
   var mX=Math.max(d.xA,d.xB,.5);
   h+='<div class="card"><div class="cl">Expected Goals (xG)</div>';
@@ -1050,10 +1227,65 @@ function renderAnalisi(){
     h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center">'+getEvAlert(_evBetCat,storStats)+'</td>';
     h+='</tr>';
   }
+  // Close EV table + custom markets section — same table
+  var _cemkts=d.customEvMkts||[];
+  var _ccombos=d.customEvCombos||[];
+  if(_cemkts.length>0||_ccombos.length>0){
+    // separator row
+    h+='<tr><td colspan="6" style="padding:0;height:1px;background:rgba(255,255,255,.08)"></td></tr>';
+    for(var _ci=0;_ci<_cemkts.length;_ci++){
+      var _cid=_cemkts[_ci],_cmk=null;
+      for(var _ei=0;_ei<EXTRA_MKTS.length;_ei++){if(EXTRA_MKTS[_ei].id===_cid){_cmk=EXTRA_MKTS[_ei];break;}}
+      if(!_cmk)continue;
+      var _clbl=_cmk.l.replace('[A]',d.nA).replace('[B]',d.nB);
+      var _cpv=_cmk.pv(d),_cbe=(100/_cpv).toFixed(2),_cevId='cev_'+_cid;
+      h+='<tr><td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px">'+_clbl+'<button onclick="removeCustomEvMkt(\''+_cid+'\')" style="margin-left:6px;padding:1px 5px;font-size:9px;border-radius:3px;border:1px solid var(--border);background:transparent;color:var(--dim);cursor:pointer;font-family:inherit">✕</button></td>';
+      h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center;font-weight:600;color:'+pc(_cpv)+'">'+f1(_cpv)+'%</td>';
+      h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center;color:var(--muted)">'+_cbe+'</td>';
+      h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center"><input type="number" step="0.01" min="1.01" max="50" id="'+_cevId+'" data-pv="'+(_cpv/100).toFixed(4)+'" placeholder="quota" style="width:58px;padding:3px 5px;font-size:13px;text-align:center;border-radius:6px;background:var(--s3);border:1px solid var(--border);color:var(--text);font-family:inherit" oninput="calcEV(this)"></td>';
+      h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center;font-weight:700" id="'+_cevId+'_ev">—</td>';
+      h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center">'+getEvAlert(_cmk.cat,storStats)+'</td></tr>';
+    }
+    for(var _cci=0;_cci<_ccombos.length;_cci++){
+      var _cc=_ccombos[_cci],_ccp=computeComboProb(_cc.ids,d);
+      var _cceId='combo_'+_cci;
+      var _cclbl=_cc.ids.map(function(id){var _f=null;for(var _m=0;_m<EXTRA_MKTS.length;_m++){if(EXTRA_MKTS[_m].id===id){_f=EXTRA_MKTS[_m].l.replace('[A]',d.nA).replace('[B]',d.nB);break;}}if(!_f){var _p={'1':'1 Casa','X':'X Pareggio','2':'2 Trasferta','over25':'Over 2.5','under25':'Under 2.5','btts':'Gol Gol','noG':'No Gol','1X':'DC 1X','X2':'DC X2'};_f=_p[id]||id;}return _f;}).join(' + ');
+      h+='<tr><td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px">🔗 '+_cclbl+'<button onclick="removeCustomEvCombo('+_cci+')" style="margin-left:6px;padding:1px 5px;font-size:9px;border-radius:3px;border:1px solid var(--border);background:transparent;color:var(--dim);cursor:pointer;font-family:inherit">✕</button></td>';
+      h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center;font-weight:600;color:'+pc(_ccp)+'">'+f1(_ccp)+'%</td>';
+      h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center;color:var(--muted)">'+(100/_ccp).toFixed(2)+'</td>';
+      h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center"><input type="number" step="0.01" min="1.01" max="500" id="'+_cceId+'" data-pv="'+(_ccp/100).toFixed(4)+'" placeholder="quota" style="width:58px;padding:3px 5px;font-size:13px;text-align:center;border-radius:6px;background:var(--s3);border:1px solid var(--border);color:var(--text);font-family:inherit" oninput="calcEV(this)"></td>';
+      h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center;font-weight:700" id="'+_cceId+'_ev">—</td>';
+      h+='<td></td></tr>';
+    }
+  }
   h+='</tbody></table></div>';
+  h+='<div style="border-top:1px solid rgba(255,255,255,.05);margin-top:4px">';
+  h+='<button onclick="_evSectionOpen=!_evSectionOpen;if(AN)renderAnalisi(AN);" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:7px 2px;background:none;border:none;cursor:pointer;color:var(--muted);font-size:11px;font-family:inherit"><span>➕ Aggiungi mercati · combo</span><span>'+(_evSectionOpen?'▲':'▼')+'</span></button>';
+  if(_evSectionOpen){
+    var _allOpts='<option value="">Mercato singolo...</option>';
+    EXTRA_MKTS.forEach(function(m){
+      if(_cemkts.indexOf(m.id)>=0)return;
+      _allOpts+='<option value="'+m.id+'">'+m.l.replace('[A]',d.nA).replace('[B]',d.nB)+' ('+f1(m.pv(d))+'%)</option>';
+    });
+    h+='<div style="padding:6px 2px;display:flex;flex-direction:column;gap:6px">';
+    h+='<div style="display:flex;gap:5px"><select id="cemktSel" style="flex:1;padding:5px 7px;font-size:11px;border-radius:7px;background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:inherit">'+_allOpts+'</select><button onclick="var s=document.getElementById(\'cemktSel\');if(s&&s.value){addCustomEvMkt(s.value);s.value=\'\'}" style="padding:5px 11px;font-size:11px;font-weight:700;border-radius:7px;border:1.5px solid var(--accent);background:rgba(245,166,35,.08);color:var(--accent);cursor:pointer;font-family:inherit">+</button></div>';
+    // Combo: stesse opzioni del mercato singolo
+    h+='<div style="display:flex;align-items:center;gap:4px">';
+    h+='<select id="cc1" style="flex:1;padding:5px 7px;font-size:11px;border-radius:7px;background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:inherit">';
+    h+='<option value="">A...</option>';
+    [['1','1 Casa'],['X','Pareggio'],['2','2 Ospite'],['over25','O2.5'],['under25','U2.5'],['btts','GG'],['noG','No G'],['1X','DC 1X'],['X2','DC X2']].forEach(function(m){h+='<option value="'+m[0]+'">'+m[1]+'</option>';});
+    EXTRA_MKTS.forEach(function(m){h+='<option value="'+m.id+'">'+m.l.replace('[A]',d.nA).replace('[B]',d.nB)+'</option>';});
+    h+='</select><span style="color:var(--muted);font-weight:700;padding:0 2px">+</span>';
+    h+='<select id="cc2" style="flex:1;padding:5px 7px;font-size:11px;border-radius:7px;background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:inherit">';
+    h+='<option value="">B...</option>';
+    [['1','1 Casa'],['X','Pareggio'],['2','2 Ospite'],['over25','O2.5'],['under25','U2.5'],['btts','GG'],['noG','No G'],['1X','DC 1X'],['X2','DC X2']].forEach(function(m){h+='<option value="'+m[0]+'">'+m[1]+'</option>';});
+    EXTRA_MKTS.forEach(function(m){h+='<option value="'+m.id+'">'+m.l.replace('[A]',d.nA).replace('[B]',d.nB)+'</option>';});
+    h+='</select><button onclick="addCustomEvCombo()" style="padding:5px 9px;font-size:11px;font-weight:700;border-radius:7px;border:1.5px solid var(--blue);background:rgba(100,200,255,.08);color:var(--blue);cursor:pointer;font-family:inherit">🔗 Combo</button></div>';
+    h+='</div>';
+  }
   h+='</div>';
-
-h+='<div class="card"><div class="cl">🤖 Prompt AI</div>';
+  h+='</div>';
+  h+='<div class="card"><div class="cl">🤖 Prompt AI</div>';
   h+='<div style="font-size:12px;color:var(--muted);margin-bottom:10px">Genera un prompt per ChatGPT/Gemini/Perplexity — formazioni, assenti, dichiarazioni, sentiment.</div>';
   h+='<button class="btn ba bfu" onclick="showPrompt()">📋 Genera Prompt</button>';
   h+='<div id="promptDiv" style="display:none;margin-top:10px"><div class="parea" id="promptText"></div>';
@@ -1096,6 +1328,8 @@ function _getBetSingleGroupKey(pb){
   if(cat==='OVER')return'OVER:'+pb.label;
   if(cat==='UNDER')return'UNDER:'+pb.label;
   if(cat==='MG')return'MG:'+pb.label;
+  if(cat==='MG_A')return'MG_A:'+pb.label;
+  if(cat==='MG_B')return'MG_B:'+pb.label;
   if(cat==='HCP')return'HCP:'+pb.label;
   if(cat==='BTTS')return'BTTS';
   if(cat==='NG')return'NG';
@@ -1106,6 +1340,8 @@ function _getBetSingleGroupLabel(pb){
   var cat=pb.cat||'ALTRO';
   if(cat==='1'||cat==='X'||cat==='2')return'Esito Finale (1/X/2)';
   if(cat==='DC1X'||cat==='DCX2'||cat==='DC12'||cat==='DNB')return'Doppia Chance';
+  if(cat==='MG_A')return pb.label||'MG Casa';
+  if(cat==='MG_B')return pb.label||'MG Ospite';
   if(cat==='BTTS')return'Gol Gol';
   if(cat==='NG')return'No Gol';
   return pb.label||'Altro';
@@ -1139,7 +1375,7 @@ function renderStorAnalysis(){
   var h='';
 
   // === Analisi per fascia di quota ===
-  var bands=[{l:1.00,u:1.21,lbl:'1.00–1.20'},{l:1.21,u:1.41,lbl:'1.21–1.40'},{l:1.41,u:1.61,lbl:'1.41–1.60'},{l:1.61,u:2.01,lbl:'1.61–2.00'},{l:2.01,u:99,lbl:'2.01+'}];
+  var bands=[{l:1.01,u:1.11,lbl:'1,01–1,10'},{l:1.11,u:1.21,lbl:'1,11–1,20'},{l:1.21,u:1.31,lbl:'1,21–1,30'},{l:1.31,u:1.41,lbl:'1,31–1,40'},{l:1.41,u:1.51,lbl:'1,41–1,50'},{l:1.51,u:1.61,lbl:'1,51–1,60'},{l:1.61,u:1.71,lbl:'1,61–1,70'},{l:1.71,u:1.81,lbl:'1,71–1,80'},{l:1.81,u:1.91,lbl:'1,81–1,90'},{l:1.91,u:2.01,lbl:'1,91–2,00'},{l:2.01,u:99,lbl:'2.01+'}];
   var bandData=bands.map(function(b){
     var s=settled.filter(function(e){var q=parseFloat(e.quota);return q&&q>=b.l&&q<b.u;});
     var w=s.filter(function(e){return e.esito==='V';});
@@ -1178,88 +1414,69 @@ function renderStorAnalysis(){
     h+='</tbody></table></div>';
   }
 
-  // === Analisi per mercato (dalla scommessa inserita) ===
-  // === Analisi per tipo di scommessa ===
-  var mkMap={};
-  settled.forEach(function(s){
-    var key,displayLabel;
-    var isComb=(s.tipo==='combo');
-    if(isComb){
-      var comboFields=[s.bet,s.bet2,s.bet3].filter(function(b){return b&&b.trim();});
-      if(!comboFields.length)return;
-      var types=comboFields.map(function(b){return _getBetTypeForCombo(parseBet(b));}).sort();
-      key='COMBO:'+types.join('|');
-      displayLabel='Combo '+types.join(' + ');
-    }else{
-      if(!s.bet||!s.bet.trim())return;
-      var pb=parseBet(s.bet);
-      key=_getBetSingleGroupKey(pb);
-      displayLabel=_getBetSingleGroupLabel(pb);
+  // === Analisi per tipologia di mercato ===
+  if(settled.length>=3){
+    var mkMap={},mkArr=[];
+    settled.forEach(function(s){
+      var isCombo=(s.tipo||'singola')==='combo';
+      var q=parseFloat(s.quota||1);
+      if(isCombo){
+        // Combos: each unique combo gets its own row by its bets label
+        var _cbParts=[s.bet,s.bet2,s.bet3].filter(function(b){return b&&b.trim();});
+        var _cbLabel='🔗 '+_cbParts.map(function(b){return parseBet(b).label;}).join(' + ');
+        var _cbKey='COMBO:'+_cbParts.map(function(b){return parseBet(b).label;}).join('+');
+        if(!mkMap[_cbKey])mkMap[_cbKey]={key:_cbKey,lbl:_cbLabel,n:0,w:0,profit:0};
+        mkMap[_cbKey].n++;
+        if(s.esito==='V'){mkMap[_cbKey].w++;mkMap[_cbKey].profit+=q-1;}
+        else mkMap[_cbKey].profit-=1;
+      } else {
+        // Singola: all filled bet fields
+        var bets=[s.bet,s.bet2,s.bet3].filter(function(b){return b&&b.trim();});
+        if(!bets.length)return;
+        bets.forEach(function(b){
+          var pb=parseBet(b),key=_getBetSingleGroupKey(pb),lbl=_getBetSingleGroupLabel(pb);
+          if(!mkMap[key])mkMap[key]={key:key,lbl:lbl,n:0,w:0,profit:0};
+          mkMap[key].n++;
+          if(s.esito==='V'){mkMap[key].w++;mkMap[key].profit+=q-1;}
+          else mkMap[key].profit-=1;
+        });
+      }
+    });
+    for(var _k in mkMap)mkArr.push(mkMap[_k]);
+    if(mkArr.length>1){
+      if(_stSort.tipo.col>0){
+        mkArr.sort(function(a,b){
+          var _fs=[null,function(x){return x.n;},function(x){return x.w;},function(x){return x.n>0?x.w/x.n:0;},function(x){return x.n>0?x.profit/x.n*100:0;}];
+          var fn=_fs[_stSort.tipo.col];return fn?(fn(b)-fn(a))*_stSort.tipo.dir:0;
+        });
+      }else{mkArr.sort(function(a,b){return _getGroupSortOrder(a.key)-_getGroupSortOrder(b.key);});}
+      h+='<div class="card"><div class="cl">🎯 Analisi per Tipologia</div>';
+      h+='<table style="width:100%;border-collapse:collapse;font-size:12px">';
+      h+='<thead><tr>';
+      var _tCols=['Tipo','Giocate','Vinte','Strike%','ROI est.'];
+      _tCols.forEach(function(th,ci){
+        var canSort=ci>0,isAct=_stSort.tipo.col===ci;
+        var arr=isAct?(_stSort.tipo.dir===1?' ↑':' ↓'):'';
+        var oc=canSort?' onclick="sortTipoCol('+ci+')"':'';
+        h+='<th'+oc+' style="background:var(--s3);padding:5px 8px;text-align:'+(th==='Tipo'?'left':'center')+';font-size:10px;font-weight:700;color:var(--muted);cursor:'+(canSort?'pointer':'default')+'">'+th+arr+'</th>';
+      });
+      h+='</tr></thead><tbody>';
+      mkArr.forEach(function(m){
+        var sr=m.n>0?(m.w/m.n*100).toFixed(0)+'%':'—';
+        var roi=m.n>0?(m.profit/m.n*100).toFixed(1):null;
+        var srC=m.n>0&&m.w/m.n>=0.55?'var(--pos)':m.n>0&&m.w/m.n>=0.4?'var(--accent)':'var(--neg)';
+        var rC=roi&&parseFloat(roi)>=0?'var(--pos)':'var(--neg)';
+        h+='<tr>';
+        h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04)">'+m.lbl+'</td>';
+        h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center">'+m.n+'</td>';
+        h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center">'+m.w+'</td>';
+        h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center;font-weight:700;color:'+srC+'">'+sr+'</td>';
+        h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center;color:'+(roi?rC:'var(--muted)')+'">'+(roi?roi+'%':'—')+'</td>';
+        h+='</tr>';
+      });
+      h+='</tbody></table></div>';
     }
-    if(!mkMap[key])mkMap[key]={label:displayLabel,n:0,w:0,profit:0,isCombo:isComb};
-    mkMap[key].n++;
-    if(s.esito==='V'){mkMap[key].w++;var q=parseFloat(s.quota);if(q)mkMap[key].profit+=q-1;}
-    else mkMap[key].profit-=1;
-  });
-  var mkArr=Object.keys(mkMap).map(function(k){return{mk:mkMap[k].label,key:k,n:mkMap[k].n,w:mkMap[k].w,p:mkMap[k].profit,isCombo:mkMap[k].isCombo||false};}).filter(function(x){return x.n>0;}).sort(function(a,b){var oa=_getGroupSortOrder(a.key),ob=_getGroupSortOrder(b.key);if(oa!==ob)return oa-ob;return b.n-a.n;});
-
-  if(mkArr.length>0){
-    h+='<div class="card"><div class="cl">🎯 Analisi per Tipo di Scommessa</div>';
-    h+='<div style="font-size:11px;color:var(--muted);margin-bottom:8px">Basato su testo inserito nel campo Scommessa. Categorizzazione automatica.</div>';
-    h+='<table style="width:100%;border-collapse:collapse;font-size:12px">';
-    h+='<thead><tr>';
-    ['Mercato','N','✅','SR%','ROI%'].forEach(function(th,ci){
-      var canSort=ci>0;
-      var isAct=_stSort.tipo.col===ci;
-      var arr=isAct?(_stSort.tipo.dir===1?' ↑':' ↓'):'';
-      var oc=canSort?' onclick="sortTipoCol('+ci+')"':'';
-      h+='<th'+oc+' style="background:var(--s3);padding:5px 8px;text-align:'+(th==='Mercato'?'left':'center')+';font-size:9px;font-weight:700;text-transform:uppercase;color:'+(isAct?'var(--accent)':'var(--muted)')+(canSort?';cursor:pointer':'')+'">'+th+arr+'</th>';
-    });
-    h+='</tr></thead><tbody>';
-    if(_stSort.tipo.col>0){mkArr.sort(function(a,b){var _tcols=[null,function(x){return x.n;},function(x){return x.w;},function(x){return x.n>0?x.w/x.n:0;},function(x){return x.n>0?x.p/x.n:0;}];var fn=_tcols[_stSort.tipo.col];var va=fn(a),vb=fn(b);return(vb-va)*_stSort.tipo.dir;});}
-    mkArr.forEach(function(m){
-      var sr=m.n>0?(m.w/m.n*100).toFixed(0)+'%':'—';
-      var srC=m.n>0&&m.w/m.n>=0.55?'var(--pos)':m.n>0&&m.w/m.n>=0.4?'var(--accent)':'var(--neg)';
-      var profC=m.p>=0?'var(--pos)':'var(--neg)';
-      h+='<tr>';
-      h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);font-weight:600">'+(m.isCombo?'🔗 ':'')+m.mk+'</td>';
-      h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center">'+m.n+'</td>';
-      h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center">'+m.w+'</td>';
-      h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center;font-weight:700;color:'+srC+'">'+sr+'</td>';
-      var roi=m.n>0?(m.p/m.n*100).toFixed(1):null;
-      h+='<td style="padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.04);text-align:center;font-weight:700;color:'+profC+'">'+(roi!==null?(parseFloat(roi)>=0?'+':'')+roi+'%':'—')+'</td>';
-      h+='</tr>';
-    });
-    h+='</tbody></table></div>';
   }
-
-  // === Trend mensile ===
-  var monthly={};
-  settled.forEach(function(s){
-    if(!s.ts)return;
-    var parts=s.ts.split(/[/\- :]/);
-    if(parts.length<3)return;
-    var key=parts[1]+'/'+parts[2]; // mm/yyyy
-    if(!monthly[key])monthly[key]={n:0,w:0};
-    monthly[key].n++;if(s.esito==='V')monthly[key].w++;
-  });
-  var mArr=Object.keys(monthly).sort().slice(-6); // last 6 months
-  if(mArr.length>=2){
-    h+='<div class="card"><div class="cl">📈 Trend Ultimi Mesi</div>';
-    h+='<div style="display:flex;gap:6px;flex-wrap:wrap">';
-    mArr.forEach(function(m){
-      var d=monthly[m];
-      var sr=d.n>0?(d.w/d.n*100).toFixed(0):'0';
-      var c=d.n>0&&d.w/d.n>=0.55?'var(--pos)':d.n>0&&d.w/d.n>=0.4?'var(--accent)':'var(--neg)';
-      h+='<div style="background:var(--s2);border-radius:var(--rs);padding:8px 12px;border:1px solid var(--border);text-align:center;min-width:70px">';
-      h+='<div style="font-size:10px;color:var(--muted)">'+m+'</div>';
-      h+='<div style="font-size:18px;font-weight:800;color:'+c+'">'+sr+'%</div>';
-      h+='<div style="font-size:10px;color:var(--dim)">'+d.w+'/'+d.n+'</div>';
-      h+='</div>';
-    });
-    h+='</div></div>';
-  }
-
   // Spunti automatici
   var insights=[];
   if(settled.length>=5){
@@ -1289,6 +1506,20 @@ function saveSt(){
     if(inp&&inp.value&&parseFloat(inp.value)>1&&evEl&&evEl.textContent&&evEl.textContent!=='—'){
       evSaved[evNames[i]]={q:parseFloat(inp.value).toFixed(2),ev:evEl.textContent};
     }
+  }
+  // Custom single market quotes
+  var _cem=AN&&AN.customEvMkts||[];
+  for(var _ci=0;_ci<_cem.length;_ci++){
+    var _cInp=document.getElementById('cev_'+_cem[_ci]);
+    var _cEl=document.getElementById('cev_'+_cem[_ci]+'_ev');
+    if(_cInp&&parseFloat(_cInp.value)>1)evSaved['cev_'+_cem[_ci]]={q:parseFloat(_cInp.value).toFixed(2),ev:_cEl?_cEl.textContent:'—'};
+  }
+  // Custom combo quotes
+  var _cco=AN&&AN.customEvCombos||[];
+  for(var _ci=0;_ci<_cco.length;_ci++){
+    var _cInp=document.getElementById('combo_'+_ci);
+    var _cEl=document.getElementById('combo_'+_ci+'_ev');
+    if(_cInp&&parseFloat(_cInp.value)>1)evSaved['combo_'+_ci]={q:parseFloat(_cInp.value).toFixed(2),ev:_cEl?_cEl.textContent:'—'};
   }
   e.evSaved=evSaved;
   e.bet='';e.quota='';e.risultato='';e.esito='';
@@ -1327,6 +1558,11 @@ function parseBet(text){
   if(/\b(dnb|draw.?no.?bet)/.test(t)){if(/\b1\b/.test(t))return{label:'1 DNB',bg:'rgba(62,207,142,.15)',col:'var(--pos)',cat:'DNB'};if(/\b2\b/.test(t))return{label:'2 DNB',bg:'rgba(62,207,142,.15)',col:'var(--pos)',cat:'DNB'};}
   // Half time
   // 1T already handled above
+  // Team-specific multigol: 'casa 1-3', 'ospite 2-4', 'home 1-2'
+  var _mgA=t.match(/(?:casa|home|squadra\s*a)\s*(\d)-(\d)/i);
+  if(_mgA)return{label:'MG Casa '+_mgA[1]+'-'+_mgA[2],bg:'rgba(62,207,142,.15)',col:'var(--pos)',cat:'MG_A'};
+  var _mgB=t.match(/(?:ospite|trasferta|away|squadra\s*b)\s*(\d)-(\d)/i);
+  if(_mgB)return{label:'MG Ospite '+_mgB[1]+'-'+_mgB[2],bg:'rgba(100,200,255,.15)',col:'#64c8ff',cat:'MG_B'};
   // Multigol N+ (e.g. "7+ gol", "MG 5+")
   var mgOpenM=t.match(/(?:multigol|mg|goals?)?\s*(\d+)\+\s*(?:gol)?$/i);if(mgOpenM)return{label:'MG '+mgOpenM[1]+'+',bg:'rgba(180,100,255,.15)',col:'#b464ff',cat:'MG'};
   // Multigol
@@ -1378,6 +1614,38 @@ function getEvAlert(cat,stats){
   var pct=Math.round(sr*100);
   var col=sr>=0.60?'var(--pos)':sr>=0.40?'var(--accent)':'var(--neg)';
   return '<span title="'+cat+': '+s.w+'/'+s.n+' ('+pct+'%)" style="cursor:help;font-size:11px;font-weight:700;color:'+col+'">'+s.w+'/'+s.n+'</span>';
+}
+function addCustomEvCombo(){
+  if(!AN)return;
+  var id1=document.getElementById('cc1')&&document.getElementById('cc1').value;
+  var id2=document.getElementById('cc2')&&document.getElementById('cc2').value;
+  if(!id1||!id2){alert('Seleziona entrambi i mercati.');return;}
+  if(id1===id2){alert('Seleziona mercati diversi.');return;}
+  if(!AN.customEvCombos)AN.customEvCombos=[];
+  AN.customEvCombos.push({ids:[id1,id2]});
+  save();
+  renderAnalisi();
+}
+function removeCustomEvCombo(idx){
+  if(!AN)return;
+  if(AN.customEvCombos)AN.customEvCombos.splice(idx,1);
+  save();
+  renderAnalisi();
+}
+function addCustomEvMkt(id){
+  if(!AN)return;
+  if(!AN.customEvMkts)AN.customEvMkts=[];
+  if(AN.customEvMkts.indexOf(id)>=0)return;
+  AN.customEvMkts.push(id);
+  save();
+  renderAnalisi();
+}
+function removeCustomEvMkt(id){
+  if(!AN)return;
+  var idx=(AN.customEvMkts||[]).indexOf(id);
+  if(idx>=0)AN.customEvMkts.splice(idx,1);
+  save();
+  renderAnalisi();
 }
 function calcEV(inp){
   var pv=parseFloat(inp.getAttribute('data-pv'));
@@ -1465,11 +1733,28 @@ function reloadSt(idx){
     var evIds=['ev_1','ev_X','ev_2','ev_o25','ev_u25','ev_btts','ev_nog','ev_1x','ev_x2'];
     var evNames=['1','X','2','O2.5','U2.5','BTTS','NoG','1X','X2'];
     setTimeout(function(){
+      // Preset markets
       for(var i=0;i<evNames.length;i++){
         var saved=s.evSaved[evNames[i]];
         if(!saved)continue;
         var inp=document.getElementById(evIds[i]);
         if(inp){inp.value=saved.q;calcEV(inp);}
+      }
+      // Custom single markets
+      var _cem=AN&&AN.customEvMkts||[];
+      for(var ci=0;ci<_cem.length;ci++){
+        var sv=s.evSaved['cev_'+_cem[ci]];
+        if(!sv)continue;
+        var inp=document.getElementById('cev_'+_cem[ci]);
+        if(inp){inp.value=sv.q;calcEV(inp);}
+      }
+      // Custom combos
+      var _cco=AN&&AN.customEvCombos||[];
+      for(var ci=0;ci<_cco.length;ci++){
+        var sv=s.evSaved['combo_'+ci];
+        if(!sv)continue;
+        var inp=document.getElementById('combo_'+ci);
+        if(inp){inp.value=sv.q;calcEV(inp);}
       }
     },100);
   }
