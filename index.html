@@ -213,6 +213,7 @@ function computeComboProb(ids,d){
   return p*100;
 }
 var _evSectionOpen=false;
+var _gooseOpen=false;
 var _stSort={fascia:{col:-1,dir:1},tipo:{col:-1,dir:1}};
 var _spuntiOpen=true;
 var _storFilt='all';
@@ -924,6 +925,150 @@ function doAnalyze(){
 }
 
 /* RENDER ANALISI */
+// GOOSE FUNCTION — will be inserted before renderAnalisi
+
+function buildGooseHtml(d,storStats){
+  var h='';
+  var MIN_P=74.1,MAX_P=90.9; // quote 1.10-1.35
+
+  // Parse top-8 exact scores into {gA,gB}
+  var top8=(d.cs||[]).slice(0,8).map(function(c){
+    var pts=c.s.split('-');return{gA:parseInt(pts[0]),gB:parseInt(pts[1]),p:c.p,s:c.s,w:c.w};
+  });
+
+  // Build unified market list with probabilities and hit functions
+  var allMkts=[];
+  [{id:'1',l:'1 Casa',cat:'1',pv:d.probs.p1},
+   {id:'X',l:'X Pareggio',cat:'X',pv:d.probs.pX},
+   {id:'2',l:'2 Trasferta',cat:'2',pv:d.probs.p2},
+   {id:'over25',l:'Over 2.5',cat:'Over 2.5',pv:d.o25b},
+   {id:'under25',l:'Under 2.5',cat:'Under 2.5',pv:100-d.o25b},
+   {id:'btts',l:'Gol Gol',cat:'BTTS',pv:d.bttsb},
+   {id:'noG',l:'No Gol',cat:'NG',pv:100-d.bttsb},
+   {id:'1X',l:'DC 1X',cat:'DC',pv:d.dc1X},
+   {id:'X2',l:'DC X2',cat:'DC',pv:d.dcX2}
+  ].forEach(function(m){
+    var hit=getHitFn(m.id);
+    if(hit)allMkts.push({id:m.id,l:m.l,cat:m.cat,pv:m.pv,hit:hit});
+  });
+  EXTRA_MKTS.forEach(function(m){
+    if(m.hit)allMkts.push({id:m.id,l:m.l.replace('[A]',d.nA).replace('[B]',d.nB),cat:m.cat,pv:m.pv(d),hit:m.hit});
+  });
+
+  // Risk bar: 8 squares, each = one of top-8 scenarios
+  function riskBar(hitFn){
+    var sq='',nOk=0;
+    for(var i=0;i<top8.length;i++){
+      var ok=hitFn(top8[i].gA,top8[i].gB);
+      if(ok)nOk++;
+      sq+='<span style="display:inline-block;width:9px;height:9px;border-radius:2px;margin:0 1px;background:'+(ok?'var(--pos)':'rgba(230,70,70,.5)')+'"></span>';
+    }
+    var c=nOk>=6?'var(--pos)':nOk>=4?'var(--accent)':'var(--neg)';
+    return '<div style="display:flex;align-items:center;gap:2px;flex-shrink:0">'+sq+'<span style="font-size:10px;font-weight:700;color:'+c+';margin-left:4px">'+nOk+'/'+top8.length+'</span></div>';
+  }
+
+  // Row builder
+  function row(name,pv,cat,hitFn,addOnclick){
+    var be=(100/pv).toFixed(2);
+    var stor=getEvAlert(cat,storStats);
+    var r='<div style="display:flex;align-items:center;gap:7px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05);flex-wrap:wrap">';
+    r+='<div style="flex:1;min-width:0"><span style="font-size:12px;font-weight:600">'+name+'</span> <span style="font-size:10px;color:var(--muted)">~'+be+'</span></div>';
+    r+='<span style="font-size:11px;font-weight:700;color:'+pc(pv)+';min-width:34px;text-align:right;flex-shrink:0">'+f1(pv)+'%</span>';
+    r+=riskBar(hitFn);
+    if(stor)r+=stor;
+    r+='<button onclick="'+addOnclick+'" style="padding:3px 10px;font-size:11px;font-weight:700;border-radius:6px;border:1.5px solid var(--accent);background:rgba(245,166,35,.08);color:var(--accent);cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0">+EV</button>';
+    r+='</div>';
+    return r;
+  }
+
+  // Singles in range
+  var singles=allMkts.filter(function(m){return m.pv>=MIN_P&&m.pv<=MAX_P;});
+  singles.sort(function(a,b){return b.pv-a.pv;});
+
+  // Valid combo pairs — solo combo scommettibili realmente
+  function makeHit(hA,hB){return function(a,b){return hA(a,b)&&hB(a,b);};}
+  function mCat(id){
+    if(id==='1'||id==='X'||id==='2')return 'esito';
+    if(id==='1X'||id==='X2')return 'dc';
+    if(/^over/.test(id)||/^under/.test(id))return 'ou';
+    if(id==='btts'||id==='noG')return 'gg';
+    if(/^mg_/.test(id))return 'mg_tot';
+    if(/^mga_/.test(id)||/^mgb_/.test(id))return 'mg_sq';
+    return 'other';
+  }
+  function isValidPair(ca,cb){
+    if(ca==='esito'&&cb==='ou')return true;
+    if(ca==='ou'&&cb==='esito')return true;
+    if(ca==='esito'&&cb==='mg_tot')return true;
+    if(ca==='mg_tot'&&cb==='esito')return true;
+    if(ca==='dc'&&cb==='mg_tot')return true;
+    if(ca==='mg_tot'&&cb==='dc')return true;
+    if(ca==='ou'&&cb==='gg')return true;
+    if(ca==='gg'&&cb==='ou')return true;
+    if(ca==='esito'&&cb==='gg')return true;
+    if(ca==='gg'&&cb==='esito')return true;
+    return false;
+  }
+  var hpMkts=allMkts.filter(function(m){return m.pv>55;});
+  var combos=[];
+  for(var i=0;i<hpMkts.length;i++){
+    for(var j=i+1;j<hpMkts.length;j++){
+      if(hpMkts[i].id===hpMkts[j].id)continue;
+      if(!isValidPair(mCat(hpMkts[i].id),mCat(hpMkts[j].id)))continue;
+      var cp=computeComboProb([hpMkts[i].id,hpMkts[j].id],d);
+      if(cp>5)combos.push({l:hpMkts[i].l+' + '+hpMkts[j].l,pv:cp,cat:'',hit:makeHit(hpMkts[i].hit,hpMkts[j].hit),ids:[hpMkts[i].id,hpMkts[j].id],inRange:cp>=MIN_P&&cp<=MAX_P});
+    }
+  }
+  combos.sort(function(a,b){return b.pv-a.pv;});
+  combos=combos.slice(0,5);
+
+  if(!singles.length&&!combos.length){
+    return '<div style="color:var(--muted);font-size:13px;padding:8px 0;text-align:center">Nessun mercato con quota implicita 1.10–1.35 per questa partita.</div>';
+  }
+
+  // Legend
+  h+='<div style="display:flex;align-items:center;gap:12px;font-size:10px;color:var(--dim);margin-bottom:10px;flex-wrap:wrap">';
+  h+='<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--pos);margin-right:3px"></span>Scenario favorevole</span>';
+  h+='<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:rgba(230,70,70,.5);margin-right:3px"></span>Scenario sfavorevole</span>';
+  h+='<span>Quadratini = top-8 risultati esatti più probabili</span>';
+  h+='</div>';
+
+  if(singles.length){
+    h+='<div class="sec">Singole ('+singles.length+')</div>';
+    singles.forEach(function(m){
+      h+=row(m.l,m.pv,m.cat,m.hit,'addGooseMkt(\''+m.id+'\')');
+    });
+  }
+  if(combos.length){
+    h+='<div class="sec" style="display:flex;align-items:center;justify-content:space-between">';
+    h+='<span>Top '+combos.length+' Combo</span>';
+    h+='<span style="font-size:10px;color:var(--dim);font-weight:400">ordinate per prob. modello · badge verde = nel range 1.10–1.35</span>';
+    h+='</div>';
+
+    combos.forEach(function(c){
+      var _beLabel=(100/c.pv).toFixed(2);
+      var _inR=c.inRange;
+      var _name=c.l+(_inR?' <span style="font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(62,207,142,.2);color:var(--pos)">1.10–1.35</span>':'');
+      h+=row(_name,c.pv,c.cat,c.hit,'addGooseCombo(\''+c.ids[0]+'\',\''+c.ids[1]+'\')');
+    });
+  }
+  return h;
+}
+
+function addGooseMkt(id){
+  if(!AN)return;
+  if(!AN.customEvMkts)AN.customEvMkts=[];
+  if(AN.customEvMkts.indexOf(id)>=0){alert('Gia nella tabella EV');return;}
+  AN.customEvMkts.push(id);save();renderAnalisi();
+}
+function addGooseCombo(id1,id2){
+  if(!AN)return;
+  if(!AN.customEvCombos)AN.customEvCombos=[];
+  var dup=AN.customEvCombos.some(function(c){return c.ids[0]===id1&&c.ids[1]===id2;});
+  if(dup){alert('Combo gia nella tabella EV');return;}
+  AN.customEvCombos.push({ids:[id1,id2]});save();renderAnalisi();
+}
+
 function renderAnalisi(){
   var ct=document.getElementById('ct-analisi');
   if(!AN){ct.innerHTML='<div style="text-align:center;padding:60px 20px;color:var(--muted)"><div style="font-size:48px;margin-bottom:12px">📊</div><div style="font-weight:700">Nessuna analisi</div><div style="font-size:13px;margin-top:6px">Torna su Input e clicca Analizza</div></div>';return;}
@@ -1292,6 +1437,20 @@ function renderAnalisi(){
   h+='<div class="br"><button class="btn bg2 bsm" onclick="copyPrompt()">📋 Copia</button><a class="btn bg2 bsm" href="https://chatgpt.com" target="_blank">ChatGPT</a><a class="btn bg2 bsm" href="https://gemini.google.com" target="_blank">Gemini</a></div></div></div>';
 
   h+='<div style="display:flex;gap:8px;margin-bottom:10px"><button class="btn ba" style="flex:1" onclick="saveSt()">💾 Salva in Storico</button><button class="btn bg2 bsm" onclick="go(\'input\')">✏️ Modifica</button></div>';
+  // === Goose section ===
+  h+='<div class="card">';
+  h+='<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">';
+  h+='<div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,rgba(100,200,255,.2),rgba(245,166,35,.2));display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">&#x1F9A2;</div>';
+  h+='<div><div style="font-size:14px;font-weight:800;letter-spacing:-.01em">Talk to me Goose</div>';
+  h+='<div style="font-size:11px;color:var(--muted);margin-top:1px">Mercati 1.10&ndash;1.35 &middot; analisi rischio &middot; storico</div></div></div>';
+  if(!_gooseOpen){
+    h+='<button class="btn ba bfu" onclick="_gooseOpen=true;renderAnalisi()">&#x1F9A2; Analizza opportunit&agrave;</button>';
+  } else {
+    h+='<button class="btn bsm" onclick="_gooseOpen=false;renderAnalisi()" style="font-size:11px;color:var(--muted);border:1px solid var(--border);background:transparent;border-radius:6px;padding:4px 10px;cursor:pointer;font-family:inherit;margin-bottom:10px">&#x25B2; Chiudi</button>';
+    h+=buildGooseHtml(d,storStats);
+  }
+  h+='</div>';
+
   if(d.regWarn){
     h+='<div class="al an" style="margin-bottom:8px">⚠️ <strong>Attenzione campione:</strong> ';
     if(d.regWarnA)h+=d.nA+' ha statistiche atipiche (media gol molto alta/bassa su 8 partite). ';
