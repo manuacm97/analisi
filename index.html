@@ -122,16 +122,27 @@ var EXTRA_MKTS=[
   // === Doppia Chance extra ===
   {id:'dc12',l:'DC 1-2 (no X)',cat:'DC12',pv:function(d){return d.probs.p1+d.probs.p2;},hit:function(a,b){return a!==b;}},
   // === Handicap ===
-  {id:'hcp_m25',l:'HCP Casa -2.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gA-gB>2.5)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return a-b>2.5;}},
-  {id:'hcp_m2',l:'HCP Casa -2',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gA-gB>2)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return a-b>2;}},
-  {id:'hcp_m15',l:'HCP Casa -1.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gA-gB>1.5)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return a-b>1.5;}},
-  {id:'hcp_m1',l:'HCP Casa -1',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gA-gB>1)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return a-b>1;}},
-  {id:'hcp_m05',l:'HCP Casa -0.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gA>gB)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return a>b;}},
-  {id:'hcp_p05',l:'HCP Ospite +0.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gB>gA)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return b>a;}},
-  {id:'hcp_p1',l:'HCP Ospite +1',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gB-gA>1)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return b-a>1;}},
-  {id:'hcp_p15',l:'HCP Ospite +1.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gB-gA>1.5)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return b-a>1.5;}},
-  {id:'hcp_p2',l:'HCP Ospite +2',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gB-gA>2)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return b-a>2;}},
-  {id:'hcp_p25',l:'HCP Ospite +2.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gB-gA>2.5)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return b-a>2.5;}},
+  {id:'hcp_c_m05',l:'HCP Casa -0.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gA-gB>0.5)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return a-b>0.5;}},
+  {id:'hcp_c_m1',l:'HCP Casa -1',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gA-gB>1)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return a-b>1;}},
+  {id:'hcp_c_m15',l:'HCP Casa -1.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gA-gB>1.5)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return a-b>1.5;}},
+  {id:'hcp_c_m2',l:'HCP Casa -2',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gA-gB>2)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return a-b>2;}},
+  {id:'hcp_c_m25',l:'HCP Casa -2.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gA-gB>2.5)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return a-b>2.5;}},
+  {id:'hcp_c_p05',l:'HCP Casa +0.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gA+0.5>gB)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return a+0.5>b;}},
+  {id:'hcp_c_p1',l:'HCP Casa +1',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gA+1>gB)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return a+1>b;}},
+  {id:'hcp_c_p15',l:'HCP Casa +1.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gA+1.5>gB)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return a+1.5>b;}},
+  {id:'hcp_c_p2',l:'HCP Casa +2',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gA+2>gB)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return a+2>b;}},
+  {id:'hcp_c_p25',l:'HCP Casa +2.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gA+2.5>gB)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return a+2.5>b;}},
+  {id:'hcp_o_m05',l:'HCP Ospite -0.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gB-gA>0.5)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return b-a>0.5;}},
+  {id:'hcp_o_m1',l:'HCP Ospite -1',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gB-gA>1)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return b-a>1;}},
+  {id:'hcp_o_m15',l:'HCP Ospite -1.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gB-gA>1.5)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return b-a>1.5;}},
+  {id:'hcp_o_m2',l:'HCP Ospite -2',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gB-gA>2)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return b-a>2;}},
+  {id:'hcp_o_m25',l:'HCP Ospite -2.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gB-gA>2.5)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return b-a>2.5;}},
+  {id:'hcp_o_p05',l:'HCP Ospite +0.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gB+0.5>gA)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return b+0.5>a;}},
+  {id:'hcp_o_p1',l:'HCP Ospite +1',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gB+1>gA)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return b+1>a;}},
+  {id:'hcp_o_p15',l:'HCP Ospite +1.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gB+1.5>gA)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return b+1.5>a;}},
+  {id:'hcp_o_p2',l:'HCP Ospite +2',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gB+2>gA)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return b+2>a;}},
+  {id:'hcp_o_p25',l:'HCP Ospite +2.5',cat:'HCP',pv:function(d){var p=0;for(var gA=0;gA<=9;gA++)for(var gB=0;gB<=9;gB++)if(gB+2.5>gA)p+=poisson(d.xA,gA)*poisson(d.xB,gB);return p*100;},hit:function(a,b){return b+2.5>a;}},
+
   // === Casa [A] — stesse range dell'analisi ===
   {id:'mga_0_0',l:'[A] 0 Gol',cat:'MG_A',pv:function(d){var p=0;for(var k=0;k<=0;k++)p+=poisson(d.xA,k);return p*100;},hit:function(a,b){return a>=0&&a<=0;}},
   {id:'mga_0_1',l:'[A] 0-1 Gol',cat:'MG_A',pv:function(d){var p=0;for(var k=0;k<=1;k++)p+=poisson(d.xA,k);return p*100;},hit:function(a,b){return a>=0&&a<=1;}},
@@ -995,6 +1006,7 @@ function buildGooseHtml(d,storStats){
     if(id==='btts'||id==='noG')return 'gg';
     if(/^mg_/.test(id))return 'mg_tot';
     if(/^mga_/.test(id)||/^mgb_/.test(id))return 'mg_sq';
+    if(/^hcp_/.test(id))return 'hcp';
     return 'other';
   }
   function isValidPair(ca,cb){
@@ -1071,6 +1083,13 @@ function addGooseCombo(id1,id2){
 }
 
 function renderAnalisi(){
+  // Save all EV input values before re-render
+  var _evQ={};
+  var _evInps=document.querySelectorAll('[data-pv]');
+  for(var _qi=0;_qi<_evInps.length;_qi++){
+    var _qInp=_evInps[_qi];
+    if(_qInp.value&&parseFloat(_qInp.value)>1)_evQ[_qInp.id]=_qInp.value;
+  }
   var ct=document.getElementById('ct-analisi');
   if(!AN){ct.innerHTML='<div style="text-align:center;padding:60px 20px;color:var(--muted)"><div style="font-size:48px;margin-bottom:12px">📊</div><div style="font-weight:700">Nessuna analisi</div><div style="font-size:13px;margin-top:6px">Torna su Input e clicca Analizza</div></div>';return;}
   var d=AN;
@@ -1460,6 +1479,11 @@ function renderAnalisi(){
   }
   h+='<div class="al ai2" style="font-size:11px;margin-bottom:16px">⚠️ Analisi statistica. Non è garanzia di vincita. Gioca responsabilmente.</div>';
   ct.innerHTML=h;
+  if(Object.keys(_evQ).length){
+    setTimeout(function(){
+      for(var _qid in _evQ){var _qel=document.getElementById(_qid);if(_qel){_qel.value=_evQ[_qid];calcEV(_qel);}}
+    },30);
+  }
 }
 
 function showPrompt(){
