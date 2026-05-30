@@ -99,7 +99,7 @@ textarea{resize:vertical;font-size:12px;font-family:'SF Mono',monospace;line-hei
 <nav class="nav">
   <button class="nb on" data-t="input" onclick="go('input')"><span class="ni">📋</span>Input</button>
   <button class="nb" data-t="analisi" onclick="go('analisi')"><span class="ni">📊</span>Analisi</button>
-  <button class="nb" data-t="storico" onclick="go('storico')"><span class="ni">💾</span>Storico</button>
+  <button class="nb" data-t="storico" onclick="go('storico')"><span class="ni">📁</span>Storico</button>
 </nav>
 <script>
 var SK='asv14';
@@ -229,7 +229,7 @@ var _stSort={fascia:{col:-1,dir:1},tipo:{col:-1,dir:1}};
 var _spuntiOpen=true;
 var _storFilt='all';
 var _storListOpen=true;
-function defS(){return{tA:{name:'',pos:0,tot:20,div:1,leagueTier:1,fifaRank:30,comp:'camp',inizioStagione:false,matches:emptyM()},tB:{name:'',pos:0,tot:20,div:1,leagueTier:1,fifaRank:50,comp:'camp',inizioStagione:false,matches:emptyM()},standings:{},standingsA:{},standingsB:{},tot:20,neutral:false,nazStage:0,firstLeg:{golA:'',golB:''},customEvMkts:[],customEvCombos:[]};}
+function defS(){return{tA:{name:'',pos:0,tot:20,div:1,leagueTier:1,fifaRank:30,comp:'camp',inizioStagione:false,matches:emptyM()},tB:{name:'',pos:0,tot:20,div:1,leagueTier:1,fifaRank:50,comp:'camp',inizioStagione:false,matches:emptyM()},standings:{},standingsA:{},standingsB:{},tot:20,neutral:false,nazStage:0,firstLeg:{golA:'',golB:''},coppaStage:0,customEvMkts:[],customEvCombos:[]};}
 var S=defS(),AN=null,STOR=[];
 var AT='input';
 function load(){
@@ -591,6 +591,16 @@ function runAnalysis(){
     if((S.nazStage||0)>=3){xA=Math.max(.15,xA*0.88);xB=Math.max(.15,xB*0.88);}
     else if((S.nazStage||0)>=2){xA=Math.max(.15,xA*0.93);xB=Math.max(.15,xB*0.93);}
   }
+  // Coppa/Euro stage adjustments
+  if(S.tA.comp==='coppa'||S.tA.comp==='euro'){
+    var _cs=S.coppaStage||0;
+    // Later rounds: teams more cautious (higher stakes) → scale down goals, boost draw prob
+    if(_cs>=3){// Semifinale or Finale: very cautious, low scoring
+      xA=Math.max(.15,xA*0.88);xB=Math.max(.15,xB*0.88);
+    }else if(_cs===2){// Quarti: slightly cautious
+      xA=Math.max(.15,xA*0.94);xB=Math.max(.15,xB*0.94);
+    }
+  }
   // Inizio stagione: regress stats toward league mean, reduce momentum weight
   var _isISA=S.tA.inizioStagione||false,_isISB=S.tB.inizioStagione||false;
   if(_isISA||_isISB){
@@ -694,6 +704,13 @@ function renderInput(){
     h+=(_nOn?'<span style="font-size:10px;padding:1px 6px;background:var(--pos);color:#000;border-radius:4px;font-weight:700">ON</span>':'');
     h+='</button></div>';
   }
+  // Fase coppa
+  if(_comp==='coppa'){
+    var _cStages=['Turni preliminari / primo turno','Ottavi di finale','Quarti di finale','Semifinale','Finale'];
+    var _csO='';_cStages.forEach(function(st,i){_csO+='<option value="'+i+'"'+((S.coppaStage||0)===i?' selected':'')+'>'+st+'</option>';});
+    h+='<div class="ir"><div class="ig"><label class="il">🏆 Fase della competizione</label><select onchange="S.coppaStage=parseInt(this.value);save();renderInput()">'+_csO+'</select></div>';
+    h+='<div class="al ai2" style="font-size:10px;margin-top:6px">Fase finale → maggiore cautela, peso difesa +5% · Finale → pressione alta, momentum +10%</div></div>';
+  }
   // Risultato andata (coppa/spareggio/euro)
   if(_comp==='coppa'||_comp==='spareggio'||_comp==='euro'){
     var _fl=S.firstLeg||{golA:'',golB:''};
@@ -713,6 +730,21 @@ function renderInput(){
     if(_flFilled){h+='<span style="font-size:11px;padding:3px 8px;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);border-radius:5px;color:var(--accent)">Agg. '+_flA+'–'+_flB+' · peso attivo</span>';}
     if(_flFilled){h+='<button onclick="resetFirstLeg()" style="font-size:11px;padding:3px 8px;border-radius:5px;border:1px solid var(--border);background:transparent;color:var(--dim);cursor:pointer;font-family:inherit">✕</button>';}
     h+='</div></div>';
+  }
+  // Division selector — coppa only
+  if(_comp==='coppa'){
+    var _divIT=['Serie A (Div. 1)','Serie B (Div. 2)','Serie C / Lega Pro (Div. 3)','Serie D / Dilettanti (Div. 4)'];
+    var _dA='',_dB='';
+    for(var _di=1;_di<=4;_di++){
+      _dA+='<option value="'+_di+'"'+((S.tA.div||1)===_di?' selected':'')+'>'+_divIT[_di-1]+'</option>';
+      _dB+='<option value="'+_di+'"'+((S.tB.div||1)===_di?' selected':'')+'>'+_divIT[_di-1]+'</option>';
+    }
+    var _divGap=Math.abs((S.tA.div||1)-(S.tB.div||1));
+    h+='<div class="ir">';
+    h+='<div class="ig"><label class="il">🏟 Divisione '+(S.tA.name||'Casa')+'</label><select onchange="S.tA.div=parseInt(this.value);save();renderInput()">'+_dA+'</select></div>';
+    h+='<div class="ig"><label class="il">🏟 Divisione '+(S.tB.name||'Trasferta')+'</label><select onchange="S.tB.div=parseInt(this.value);save();renderInput()">'+_dB+'</select></div>';
+    h+='</div>';
+    if(_divGap>0)h+='<div class="al aw" style="font-size:10px;margin-bottom:6px">⚡ Gap di '+_divGap+' '+(_divGap===1?'divisione':'divisioni')+' — vantaggio calcolato per la squadra di categoria superiore</div>';
   }
   if(_comp==='spareggio'){
     var _divL=['Top flight','Seconda divisione','Terza divisione','Quarta divisione'];
@@ -735,7 +767,11 @@ function renderInput(){
     var _to='',_toB='';for(var _ti=0;_ti<_tiers.length;_ti++){_to+='<option value="'+(_ti+1)+'"'+((S.tA.leagueTier||1)===(_ti+1)?' selected':'')+'>'+_tiers[_ti]+'</option>';_toB+='<option value="'+(_ti+1)+'"'+((S.tB.leagueTier||1)===(_ti+1)?' selected':'')+'>'+_tiers[_ti]+'</option>';}
     h+='<div class="ir"><div class="ig"><label class="il">🏆 Federazione/Lega '+(S.tA.name||'Casa')+'</label><select onchange="S.tA.leagueTier=parseInt(this.value);save()">'+_to+'</select></div>';
     h+='<div class="ig"><label class="il">🏆 Federazione/Lega '+(S.tB.name||'Trasferta')+'</label><select onchange="S.tB.leagueTier=parseInt(this.value);save()">'+_toB+'</select></div></div>';
-    h+='<div class="al ai2" style="font-size:10px;margin-top:2px">Gap di tier corregge automaticamente l\'xG (es. Tier1 vs Tier3: +0.28 goal attesi per il Tier1).</div>';
+    h+='<div class="al ai2" style="font-size:10px;margin-top:2px">Gap di tier corregge automaticamente l\'xG (es. Tier1 vs Tier3: +0.28 goal attesi per il Tier1).</div>';    var _euroStages=['Turni preliminari/qualificazioni','Fase a gironi','Ottavi di finale','Quarti di finale','Semifinale','Finale'];
+    var _esO='';_euroStages.forEach(function(st,i){_esO+='<option value="'+i+'"'+((S.coppaStage||0)===i?' selected':'')+'>'+st+'</option>';});
+    h+='<div class="ig" style="margin-top:8px"><label class="il">🏆 Fase della competizione</label><select onchange="S.coppaStage=parseInt(this.value);save();renderInput()">'+_esO+'</select></div>';
+    if((S.coppaStage||0)>=4)h+='<div class="al aw" style="font-size:10px">Fase finale → difesa prioritaria, xG scalato del 10%</div>';
+    else if((S.coppaStage||0)>=2)h+='<div class="al ai2" style="font-size:10px">Fase ad eliminazione diretta → leggera cautela applicata</div>';
   }
   if(_comp==='naz'){
     var _stages=['Qualificazione','Fase a gironi','Ottavi/Quarti','Semifinale','Finale'];
